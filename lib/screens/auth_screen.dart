@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
 import 'home_screen.dart';
+import 'widgets/auth/auth_form_fields.dart';
+import 'widgets/auth/forgot_password_dialog.dart';
 
 enum AuthMode { login, register }
 
@@ -15,6 +17,10 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static final RegExp _usernameRegex = RegExp(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$');
+  static final RegExp _whitespaceRegex = RegExp(r'\s');
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -26,6 +32,9 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   String? _message;
+
+  bool get _isSuccessMessage =>
+      (_message ?? '').toLowerCase().contains('exitoso');
 
   @override
   void initState() {
@@ -41,22 +50,57 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  String? _requiredValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
+  String? _usernameValidator(String? value) {
+    final String raw = value ?? '';
+    final String normalized = raw.trim();
+    if (normalized.isEmpty) {
       return 'Este campo es obligatorio';
+    }
+    if (raw != normalized) {
+      return 'Ingrese un usuario valido';
+    }
+    if (normalized.contains('  ')) {
+      return 'Ingrese un usuario valido';
+    }
+    if (!_usernameRegex.hasMatch(normalized)) {
+      return 'Ingrese un usuario valido';
     }
     return null;
   }
 
   String? _passwordValidator(String? value) {
-    final String? requiredMessage = _requiredValidator(value);
-    if (requiredMessage != null) {
-      return requiredMessage;
+    final String password = value ?? '';
+    if (password.trim().isEmpty) {
+      return 'Este campo es obligatorio';
     }
-    if ((value ?? '').length < 6) {
+    if (_whitespaceRegex.hasMatch(password)) {
+      return 'La contraseña no puede contener espacios';
+    }
+    if (password.length < 6) {
       return 'La contraseña debe tener mínimo 6 caracteres';
     }
     return null;
+  }
+
+  Future<void> _openForgotPassword() async {
+    final String? message = await showDialog<String>(
+      context: context,
+      builder: (_) => ForgotPasswordDialog(
+        usernameValidator: _usernameValidator,
+        passwordValidator: _passwordValidator,
+        accentIndigo: _accentIndigo,
+        onSubmit: (username, password) =>
+            AuthController.instance.resetPassword(username, password),
+      ),
+    );
+
+    if (!mounted || message == null || message.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _message = message;
+    });
   }
 
   Future<void> _openRegister() async {
@@ -156,7 +200,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       Text(
                         isLogin
                             ? 'Accede para reservar'
-                            : 'Regístrate para comprar y reservar',
+                            : 'Regístrate para hacer tu reserva',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -166,80 +210,35 @@ class _AuthScreenState extends State<AuthScreen> {
                       Form(
                         key: _formKey,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _usernameController,
-                              validator: _requiredValidator,
-                              decoration: const InputDecoration(
-                                labelText: 'Usuario',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              validator: _passwordValidator,
-                              decoration: InputDecoration(
-                                labelText: 'Contraseña',
-                                border: const OutlineInputBorder(),
-                                suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (!isLogin) ...[
-                              const SizedBox(height: 12),
-                              TextFormField(
-                                controller: _confirmPasswordController,
-                                obscureText: _obscureConfirmPassword,
-                                validator: (value) {
-                                  final String? passError = _passwordValidator(
-                                    value,
-                                  );
-                                  if (passError != null) {
-                                    return passError;
-                                  }
-                                  if (value != _passwordController.text) {
-                                    return 'Las contraseñas no coinciden';
-                                  }
-                                  return null;
-                                },
-                                decoration: InputDecoration(
-                                  labelText: 'Confirmar contraseña',
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscureConfirmPassword =
-                                            !_obscureConfirmPassword;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      _obscureConfirmPassword
-                                          ? Icons.visibility_off
-                                          : Icons.visibility,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
+                        child: AuthFormFields(
+                          mode: _mode,
+                          usernameController: _usernameController,
+                          passwordController: _passwordController,
+                          confirmPasswordController: _confirmPasswordController,
+                          obscurePassword: _obscurePassword,
+                          obscureConfirmPassword: _obscureConfirmPassword,
+                          usernameValidator: _usernameValidator,
+                          passwordValidator: _passwordValidator,
+                          onTogglePasswordVisibility: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                          onToggleConfirmPasswordVisibility: () {
+                            setState(() {
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
+                            });
+                          },
                         ),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _isLoading ? null : _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _accentIndigo,
+                          foregroundColor: Colors.white,
+                        ),
                         child: _isLoading
                             ? const SizedBox(
                                 height: 18,
@@ -251,6 +250,11 @@ class _AuthScreenState extends State<AuthScreen> {
                             : Text(isLogin ? 'Iniciar sesión' : 'Registrarme'),
                       ),
                       const SizedBox(height: 8),
+                      if (isLogin)
+                        TextButton(
+                          onPressed: _isLoading ? null : _openForgotPassword,
+                          child: const Text('Has olvidado tu contraseña?'),
+                        ),
                       if (isLogin)
                         TextButton(
                           onPressed: _isLoading ? null : _openRegister,
@@ -268,7 +272,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         Text(
                           _message!,
                           style: TextStyle(
-                            color: _message!.toLowerCase().contains('exitoso')
+                            color: _isSuccessMessage
                                 ? Colors.green
                                 : Colors.red,
                             fontWeight: FontWeight.w600,

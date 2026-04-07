@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
 import 'auth_screen.dart';
-import 'home_screen.dart';
-import 'salones_screen.dart';
-import 'historial_screen.dart';
+import 'widgets/main_bottom_nav.dart';
+import 'widgets/perfil/profile_action.dart';
+import 'widgets/perfil/profile_header.dart';
 
 /// PerfilScreen — Guest profile page with auth actions and account shortcuts.
 class PerfilScreen extends StatefulWidget {
@@ -37,12 +37,25 @@ class _PerfilScreenState extends State<PerfilScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildProfileHeader(context),
+          ProfileHeader(
+            isLoggedIn: AuthController.instance.isLoggedIn,
+            username: AuthController.instance.session?.username ?? 'Invitado',
+            primaryDark: _primaryDark,
+            accentIndigo: _accentIndigo,
+            onLogin: () => _openAuth(AuthMode.login),
+            onRegister: () => _openAuth(AuthMode.register),
+            onLogout: () {
+              AuthController.instance.logout();
+              setState(() {});
+            },
+          ),
           const SizedBox(height: 20),
-          _buildActionTile(
+          ProfileActionTile(
             icon: Icons.event_note,
             title: 'Mis reservas',
             subtitle: 'Consulta y administra tus reservas',
+            accentIndigo: _accentIndigo,
+            primaryDark: _primaryDark,
             onTap: () {
               if (!AuthController.instance.isLoggedIn) {
                 _openAuth(AuthMode.login);
@@ -56,187 +69,33 @@ class _PerfilScreenState extends State<PerfilScreen> {
               );
             },
           ),
-          _buildActionTile(
+          ProfileActionTile(
             icon: Icons.account_balance_wallet,
             title: 'Mi billetera',
             subtitle: 'Métodos de pago y saldo disponible',
+            accentIndigo: _accentIndigo,
+            primaryDark: _primaryDark,
             onTap: () {},
           ),
-          _buildActionTile(
+          ProfileActionTile(
             icon: Icons.timeline,
             title: 'Mi actividad',
             subtitle: 'Revisa tus movimientos recientes',
+            accentIndigo: _accentIndigo,
+            primaryDark: _primaryDark,
             onTap: () {},
           ),
-          _buildActionTile(
+          ProfileActionTile(
             icon: Icons.help_outline,
             title: 'Ayuda',
             subtitle: 'Soporte y preguntas frecuentes',
+            accentIndigo: _accentIndigo,
+            primaryDark: _primaryDark,
             onTap: () {},
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        selectedItemColor: _primaryDark,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
-            );
-          } else if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const SalonesScreen()),
-            );
-          } else if (index == 2) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const HistorialScreen()),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.business), label: 'Salones'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Historial',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileHeader(BuildContext context) {
-    final bool isLoggedIn = AuthController.instance.isLoggedIn;
-    final String username =
-        AuthController.instance.session?.username ?? 'Invitado';
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(12),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 74,
-            height: 74,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: _accentIndigo.withAlpha(60), width: 2),
-              color: Colors.grey[100],
-            ),
-            child: const Icon(
-              Icons.person_outline,
-              size: 38,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isLoggedIn ? 'Perfil de $username' : 'Perfil de invitado',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: _primaryDark,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  isLoggedIn
-                      ? 'Ya puedes reservar y administrar tu cuenta'
-                      : 'Inicia sesión o regístrate para gestionar tu cuenta',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 12),
-                if (!isLoggedIn)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => _openAuth(AuthMode.login),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryDark,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Iniciar sesión'),
-                      ),
-                      OutlinedButton(
-                        onPressed: () => _openAuth(AuthMode.register),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _accentIndigo,
-                          side: const BorderSide(color: _accentIndigo),
-                        ),
-                        child: const Text('Registrarse'),
-                      ),
-                    ],
-                  )
-                else
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      AuthController.instance.logout();
-                      setState(() {});
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _primaryDark,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Cerrar sesión'),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: _accentIndigo.withAlpha(22),
-          child: Icon(icon, color: _accentIndigo),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: _primaryDark,
-          ),
-        ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      ),
+      bottomNavigationBar: const MainBottomNav(currentIndex: 4),
     );
   }
 }

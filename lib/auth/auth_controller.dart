@@ -46,23 +46,49 @@ class AuthController {
     _session = null;
   }
 
+  bool _isSuccessful(int statusCode) => statusCode >= 200 && statusCode < 300;
+
+  AuthResult _timeoutError() {
+    return AuthResult(
+      success: false,
+      message:
+          'Tiempo de espera agotado. Revisa la conexión con el servidor ($_baseUrl)',
+    );
+  }
+
+  Future<http.Response> _postJson(
+    String endpoint,
+    Map<String, dynamic> payload,
+  ) {
+    final Uri url = Uri.parse('$_baseUrl/$endpoint');
+    return http
+        .post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(payload),
+        )
+        .timeout(_requestTimeout);
+  }
+
+  Future<http.Response> _postAuth(
+    String endpoint,
+    String usuario,
+    String password,
+  ) {
+    return _postJson(endpoint, {'usuario': usuario, 'password': password});
+  }
+
+  Map<String, dynamic> _decodeToMap(String rawBody) {
+    final dynamic parsed = json.decode(rawBody);
+    return parsed is Map<String, dynamic> ? parsed : <String, dynamic>{};
+  }
+
   Future<AuthResult> login(String usuario, String password) async {
-    final Uri url = Uri.parse('$_baseUrl/login');
     try {
-      final response = await http
-          .post(
-            url,
-            headers: {'Content-Type': 'application/json'},
-            body: json.encode({'usuario': usuario, 'password': password}),
-          )
-          .timeout(_requestTimeout);
+      final response = await _postAuth('login', usuario, password);
+      final Map<String, dynamic> data = _decodeToMap(response.body);
 
-      final dynamic parsed = json.decode(response.body);
-      final Map<String, dynamic> data = parsed is Map<String, dynamic>
-          ? parsed
-          : <String, dynamic>{};
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (_isSuccessful(response.statusCode)) {
         final String resolvedUser =
             (data['usuario'] as String?)?.trim().isNotEmpty == true
             ? data['usuario'] as String
@@ -82,11 +108,7 @@ class AuthController {
         message: (data['detail'] as String?) ?? 'Credenciales incorrectas',
       );
     } on TimeoutException {
-      return AuthResult(
-        success: false,
-        message:
-            'Tiempo de espera agotado. Revisa la conexión con el servidor ($_baseUrl)',
-      );
+      return _timeoutError();
     } catch (_) {
       return const AuthResult(
         success: false,
@@ -96,22 +118,11 @@ class AuthController {
   }
 
   Future<AuthResult> registrar(String usuario, String password) async {
-    final Uri url = Uri.parse('$_baseUrl/registro');
     try {
-      final response = await http
-          .post(
-            url,
-            headers: {'Content-Type': 'application/json'},
-            body: json.encode({'usuario': usuario, 'password': password}),
-          )
-          .timeout(_requestTimeout);
+      final response = await _postAuth('registro', usuario, password);
+      final Map<String, dynamic> data = _decodeToMap(response.body);
 
-      final dynamic parsed = json.decode(response.body);
-      final Map<String, dynamic> data = parsed is Map<String, dynamic>
-          ? parsed
-          : <String, dynamic>{};
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (_isSuccessful(response.statusCode)) {
         return AuthResult(
           success: true,
           message: (data['message'] as String?) ?? 'Registro exitoso',
@@ -124,11 +135,39 @@ class AuthController {
         message: (data['detail'] as String?) ?? 'No se pudo registrar',
       );
     } on TimeoutException {
+      return _timeoutError();
+    } catch (_) {
+      return const AuthResult(
+        success: false,
+        message: 'No se pudo conectar con el servidor',
+      );
+    }
+  }
+
+  Future<AuthResult> resetPassword(String usuario, String newPassword) async {
+    try {
+      final response = await _postJson('forgot-password', {
+        'usuario': usuario,
+        'new_password': newPassword,
+      });
+      final Map<String, dynamic> data = _decodeToMap(response.body);
+
+      if (_isSuccessful(response.statusCode)) {
+        return AuthResult(
+          success: true,
+          message:
+              (data['message'] as String?) ?? 'Contraseña actualizada exitosamente',
+          username: usuario,
+        );
+      }
+
       return AuthResult(
         success: false,
         message:
-            'Tiempo de espera agotado. Revisa la conexión con el servidor ($_baseUrl)',
+            (data['detail'] as String?) ?? 'No se pudo actualizar la contraseña',
       );
+    } on TimeoutException {
+      return _timeoutError();
     } catch (_) {
       return const AuthResult(
         success: false,

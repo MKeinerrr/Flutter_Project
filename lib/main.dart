@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Salon Reservation',
+      title: 'Bookmaster',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // Custom color scheme based on the salon branding palette
