@@ -86,16 +86,6 @@ class HomeHeroSection extends StatelessWidget {
                   ],
                 ),
               ),
-              const Spacer(),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(28),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.tune, color: Colors.white),
-              ),
             ],
           ),
           const SizedBox(height: 18),

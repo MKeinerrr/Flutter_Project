@@ -33,8 +33,13 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _obscureConfirmPassword = true;
   String? _message;
 
-  bool get _isSuccessMessage =>
-      (_message ?? '').toLowerCase().contains('exitoso');
+  bool get _isSuccessMessage {
+    final String message = (_message ?? '').toLowerCase();
+    if (message.isEmpty || message.contains('no se pudo')) {
+      return false;
+    }
+    return message.contains('exitos') || message.contains('actualizada');
+  }
 
   @override
   void initState() {
@@ -104,21 +109,16 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _openRegister() async {
-    final bool? registered = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const AuthScreen(
-          initialMode: AuthMode.register,
-          title: 'Crear cuenta',
-        ),
-      ),
-    );
-
-    if (mounted && registered == true) {
-      setState(() {
-        _message = 'Registro exitoso. Ahora inicia sesión';
-      });
+    if (!mounted) {
+      return;
     }
+
+    setState(() {
+      _mode = AuthMode.register;
+      _message = null;
+      _passwordController.clear();
+      _confirmPasswordController.clear();
+    });
   }
 
   Future<void> _submit() async {
@@ -264,7 +264,14 @@ class _AuthScreenState extends State<AuthScreen> {
                         TextButton(
                           onPressed: _isLoading
                               ? null
-                              : () => Navigator.pop(context),
+                              : () {
+                                  setState(() {
+                                    _mode = AuthMode.login;
+                                    _message = null;
+                                    _passwordController.clear();
+                                    _confirmPasswordController.clear();
+                                  });
+                                },
                           child: const Text('Ya tengo cuenta, volver al login'),
                         ),
                       if (_message != null) ...[

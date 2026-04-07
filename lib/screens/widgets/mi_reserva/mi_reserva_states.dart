@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const Color _miReservaPrimaryDark = Color(0xFF1A0A4C);
+
 class MiReservaNoReservationState extends StatelessWidget {
   const MiReservaNoReservationState({super.key});
 
@@ -53,6 +55,10 @@ class MiReservaGuestState extends StatelessWidget {
               onPressed: onLogin,
               icon: const Icon(Icons.login),
               label: const Text('Iniciar sesion'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _miReservaPrimaryDark,
+                foregroundColor: Colors.white,
+              ),
             ),
           ],
         ),
