@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../mi_reserva_screen.dart';
 import '../../salones_screen.dart';
+import '../../utils/favorites_store.dart';
 
 class HomeNextReservationData {
   const HomeNextReservationData({
@@ -16,6 +17,7 @@ class HomeNextReservationData {
 
 class HomeFeaturedSalon {
   const HomeFeaturedSalon({
+    required this.id,
     required this.name,
     required this.type,
     required this.capacity,
@@ -25,6 +27,7 @@ class HomeFeaturedSalon {
     required this.colorB,
   });
 
+  final int id;
   final String name;
   final String type;
   final String capacity;
@@ -300,18 +303,86 @@ class HomeFeaturedSalons extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 272,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: salons.length,
-        itemBuilder: (context, index) {
-          final HomeFeaturedSalon salon = salons[index];
-          return _HomeFeaturedCard(
-            salon: salon,
-            primaryDark: primaryDark,
-            accentIndigo: accentIndigo,
+      child: ValueListenableBuilder<Set<int>>(
+        valueListenable: FavoritesStore.favorites,
+        builder: (context, favorites, _) {
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: salons.length,
+            itemBuilder: (context, index) {
+              final HomeFeaturedSalon salon = salons[index];
+              final bool isFavorite = favorites.contains(salon.id);
+              return _HomeFeaturedCard(
+                salon: salon,
+                primaryDark: primaryDark,
+                accentIndigo: accentIndigo,
+                isFavorite: isFavorite,
+                onToggleFavorite: () => FavoritesStore.toggle(salon.id),
+              );
+            },
           );
         },
+      ),
+    );
+  }
+}
+
+class HomeFeaturedEmpty extends StatelessWidget {
+  const HomeFeaturedEmpty({
+    super.key,
+    required this.message,
+    required this.accentIndigo,
+    required this.primaryDark,
+    required this.onRetry,
+  });
+
+  final String message;
+  final Color accentIndigo;
+  final Color primaryDark;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(10),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              message,
+              style: TextStyle(
+                color: primaryDark,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: Icon(Icons.refresh, color: accentIndigo),
+              label: Text(
+                'Reintentar',
+                style: TextStyle(color: accentIndigo),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: accentIndigo),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -322,11 +393,15 @@ class _HomeFeaturedCard extends StatelessWidget {
     required this.salon,
     required this.primaryDark,
     required this.accentIndigo,
+    required this.isFavorite,
+    required this.onToggleFavorite,
   });
 
   final HomeFeaturedSalon salon;
   final Color primaryDark;
   final Color accentIndigo;
+  final bool isFavorite;
+  final VoidCallback onToggleFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -375,9 +450,14 @@ class _HomeFeaturedCard extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          const Icon(
-                            Icons.favorite_border,
-                            color: Colors.white,
+                          GestureDetector(
+                            onTap: onToggleFavorite,
+                            child: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite ? Colors.red[200] : Colors.white,
+                            ),
                           ),
                         ],
                       ),

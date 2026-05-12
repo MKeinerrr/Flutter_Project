@@ -1,8 +1,18 @@
 class ScreenFormatters {
   const ScreenFormatters._();
 
-  static String formatCurrency(int value) {
-    final String text = value.toString();
+  static String formatCurrency(num value) {
+    final bool isNegative = value < 0;
+    final num absValue = value.abs();
+    int integerPart = absValue.floor();
+    int decimalPart = ((absValue - integerPart) * 100).round();
+
+    if (decimalPart >= 100) {
+      integerPart += 1;
+      decimalPart = 0;
+    }
+
+    final String text = integerPart.toString();
     final StringBuffer out = StringBuffer();
     int count = 0;
 
@@ -14,6 +24,10 @@ class ScreenFormatters {
       }
     }
 
-    return out.toString().split('').reversed.join();
+    final String formatted = out.toString().split('').reversed.join();
+    final String withDecimals = decimalPart == 0
+        ? formatted
+        : '$formatted,${decimalPart.toString().padLeft(2, '0')}';
+    return isNegative ? '-$withDecimals' : withDecimals;
   }
 }

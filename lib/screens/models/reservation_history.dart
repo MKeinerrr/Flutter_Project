@@ -25,7 +25,7 @@ class ReservationHistoryItem {
   final int guests;
   final String status;
   final String payment;
-  final int amount;
+  final double amount;
   final String notes;
   final DateTime sortDate;
 }

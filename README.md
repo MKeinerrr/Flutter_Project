@@ -56,27 +56,6 @@ cd ../flutter_proyecto
 flutter run
 ```
 
-## Arquitectura (resumen)
-
-```text
-lib/
-	auth/
-		auth_controller.dart              # Sesión y llamadas auth
-	config/
-		api_config.dart                   # URL base API por plataforma
-	screens/
-		home_screen.dart
-		salones_screen.dart
-		mi_reserva_screen.dart
-		historial_screen.dart
-		perfil_screen.dart
-		auth_screen.dart
-		models/                           # Modelos de UI y requests
-		services/                         # Capa de llamadas/API y lógica de datos
-		utils/                            # Helpers de formato y filtrado
-		widgets/                          # Widgets por módulo (home, salones, auth, etc.)
-```
-
 ## Pantallas
 
 - Inicio: resumen y acceso rápido.

@@ -117,9 +117,25 @@ class AuthController {
     }
   }
 
-  Future<AuthResult> registrar(String usuario, String password) async {
+  Future<AuthResult> registrar({
+    required String nombre,
+    required String apellido,
+    required String usuario,
+    required String correo,
+    required String password,
+    String? telefono,
+    String? direccion,
+  }) async {
     try {
-      final response = await _postAuth('registro', usuario, password);
+      final response = await _postJson('registro', {
+        'nombre': nombre,
+        'apellido': apellido,
+        'usuario': usuario,
+        'correo': correo,
+        'password': password,
+        'telefono': telefono,
+        'direccion': direccion,
+      });
       final Map<String, dynamic> data = _decodeToMap(response.body);
 
       if (_isSuccessful(response.statusCode)) {

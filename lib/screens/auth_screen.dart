@@ -18,11 +18,16 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   static const Color _accentIndigo = Color(0xFF3D3B8E);
-  static final RegExp _usernameRegex = RegExp(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$');
+  static final RegExp _usernameRegex = RegExp(r'^[A-Za-z0-9._-]+$');
+  static final RegExp _nameRegex = RegExp(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$');
+  static final RegExp _emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
   static final RegExp _whitespaceRegex = RegExp(r'\s');
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
@@ -50,9 +55,36 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  String? _loginIdentifierValidator(String? value) {
+    final String raw = value ?? '';
+    final String normalized = raw.trim();
+    if (normalized.isEmpty) {
+      return 'Este campo es obligatorio';
+    }
+    if (raw != normalized) {
+      return 'Ingrese un usuario o correo valido';
+    }
+    if (_whitespaceRegex.hasMatch(normalized)) {
+      return 'Ingrese un usuario o correo valido';
+    }
+    if (normalized.contains('@')) {
+      if (!_emailRegex.hasMatch(normalized)) {
+        return 'Ingrese un correo valido';
+      }
+      return null;
+    }
+    if (!_usernameRegex.hasMatch(normalized)) {
+      return 'Ingrese un usuario valido';
+    }
+    return null;
   }
 
   String? _usernameValidator(String? value) {
@@ -61,14 +93,37 @@ class _AuthScreenState extends State<AuthScreen> {
     if (normalized.isEmpty) {
       return 'Este campo es obligatorio';
     }
-    if (raw != normalized) {
+    if (raw != normalized || _whitespaceRegex.hasMatch(normalized)) {
       return 'Ingrese un usuario valido';
     }
-    if (normalized.contains('  ')) {
+    if (normalized.contains('@') || !_usernameRegex.hasMatch(normalized)) {
       return 'Ingrese un usuario valido';
     }
-    if (!_usernameRegex.hasMatch(normalized)) {
-      return 'Ingrese un usuario valido';
+    return null;
+  }
+
+  String? _nameValidator(String? value) {
+    final String raw = value ?? '';
+    final String normalized = raw.trim();
+    if (normalized.isEmpty) {
+      return 'Este campo es obligatorio';
+    }
+    if (raw != normalized || normalized.contains('  ')) {
+      return 'Ingrese un nombre valido';
+    }
+    if (!_nameRegex.hasMatch(normalized)) {
+      return 'Ingrese un nombre valido';
+    }
+    return null;
+  }
+
+  String? _emailValidator(String? value) {
+    final String normalized = (value ?? '').trim();
+    if (normalized.isEmpty) {
+      return 'Este campo es obligatorio';
+    }
+    if (!_emailRegex.hasMatch(normalized)) {
+      return 'Ingrese un correo valido';
     }
     return null;
   }
@@ -91,7 +146,7 @@ class _AuthScreenState extends State<AuthScreen> {
     final String? message = await showDialog<String>(
       context: context,
       builder: (_) => ForgotPasswordDialog(
-        usernameValidator: _usernameValidator,
+        identifierValidator: _loginIdentifierValidator,
         passwordValidator: _passwordValidator,
         accentIndigo: _accentIndigo,
         onSubmit: (username, password) =>
@@ -116,6 +171,9 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() {
       _mode = AuthMode.register;
       _message = null;
+      _firstNameController.clear();
+      _lastNameController.clear();
+      _emailController.clear();
       _passwordController.clear();
       _confirmPasswordController.clear();
     });
@@ -128,6 +186,9 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     final String username = _usernameController.text.trim();
+    final String firstName = _firstNameController.text.trim();
+    final String lastName = _lastNameController.text.trim();
+    final String email = _emailController.text.trim();
     final String password = _passwordController.text;
 
     setState(() {
@@ -137,9 +198,15 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       final bool isLogin = _mode == AuthMode.login;
-      final AuthResult result = isLogin
+        final AuthResult result = isLogin
           ? await AuthController.instance.login(username, password)
-          : await AuthController.instance.registrar(username, password);
+          : await AuthController.instance.registrar(
+            nombre: firstName,
+            apellido: lastName,
+            usuario: username,
+            correo: email,
+            password: password,
+          );
 
       if (!mounted) {
         return;
@@ -213,11 +280,17 @@ class _AuthScreenState extends State<AuthScreen> {
                         child: AuthFormFields(
                           mode: _mode,
                           usernameController: _usernameController,
+                          firstNameController: _firstNameController,
+                          lastNameController: _lastNameController,
+                          emailController: _emailController,
                           passwordController: _passwordController,
                           confirmPasswordController: _confirmPasswordController,
                           obscurePassword: _obscurePassword,
                           obscureConfirmPassword: _obscureConfirmPassword,
+                          loginIdentifierValidator: _loginIdentifierValidator,
                           usernameValidator: _usernameValidator,
+                          nameValidator: _nameValidator,
+                          emailValidator: _emailValidator,
                           passwordValidator: _passwordValidator,
                           onTogglePasswordVisibility: () {
                             setState(() {
@@ -268,6 +341,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                   setState(() {
                                     _mode = AuthMode.login;
                                     _message = null;
+                                    _firstNameController.clear();
+                                    _lastNameController.clear();
+                                    _emailController.clear();
                                     _passwordController.clear();
                                     _confirmPasswordController.clear();
                                   });

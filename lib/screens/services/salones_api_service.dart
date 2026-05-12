@@ -33,11 +33,11 @@ class SalonesApiService {
     }
 
     final dynamic parsed = json.decode(response.body);
-    final Map<String, dynamic> payload = parsed is Map<String, dynamic>
+    final Map<String, dynamic> responsePayload = parsed is Map<String, dynamic>
         ? parsed
         : <String, dynamic>{};
     throw Exception(
-      (payload['detail'] as String?) ?? 'No se pudo cargar la búsqueda',
+      (responsePayload['detail'] as String?) ?? 'No se pudo cargar la búsqueda',
     );
   }
 
@@ -51,6 +51,21 @@ class SalonesApiService {
     }
 
     final Uri url = Uri.parse('$baseUrl/reservas');
+    final Map<String, dynamic> payload = {
+      'salon_id': salonId,
+      'fecha': _formatDateForApi(request.fecha),
+      'franja_horaria_id': request.franjaHorariaId,
+      'asistentes': request.asistentes,
+      'notas': (request.notas?.trim().isNotEmpty ?? false)
+          ? request.notas!.trim()
+          : null,
+      'descuento': request.descuento,
+      'abono': request.abono,
+      'motivo': request.motivo,
+      'garantia': request.garantia,
+      'metodo_id': request.metodoId,
+      'num_transaccion': request.numTransaccion,
+    };
     final response = await http
         .post(
           url,
@@ -58,35 +73,27 @@ class SalonesApiService {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
           },
-          body: json.encode({
-            'salon_id': salonId,
-            'fecha': _formatDateForApi(request.fecha),
-            'hora': request.hora,
-            'asistentes': request.asistentes,
-            'notas': (request.notas?.trim().isNotEmpty ?? false)
-                ? request.notas!.trim()
-                : null,
-          }),
+          body: json.encode(payload),
         )
         .timeout(requestTimeout);
 
     final dynamic parsed = json.decode(response.body);
-    final Map<String, dynamic> payload = parsed is Map<String, dynamic>
+    final Map<String, dynamic> responsePayload = parsed is Map<String, dynamic>
         ? parsed
         : <String, dynamic>{};
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      final String code = (payload['codigo'] as String?) ?? '';
+      final String code = (responsePayload['codigo'] as String?) ?? '';
       if (code.isNotEmpty) {
         return code;
       }
-      final dynamic idRaw = payload['id'];
+      final dynamic idRaw = responsePayload['id'];
       final int id = idRaw is num ? idRaw.toInt() : int.tryParse('$idRaw') ?? 0;
       return 'RES-${id.toString().padLeft(3, '0')}';
     }
 
     throw Exception(
-      (payload['detail'] as String?) ?? 'No se pudo confirmar la reserva',
+      (responsePayload['detail'] as String?) ?? 'No se pudo confirmar la reserva',
     );
   }
 

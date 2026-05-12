@@ -4,9 +4,14 @@ import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
 import '../config/api_config.dart';
 import 'auth_screen.dart';
+import 'salon_detail_screen.dart';
+import 'models/catalog_item.dart';
 import 'models/reservation_request.dart';
 import 'models/salon_view_model.dart';
+import 'services/catalogos_api_service.dart';
 import 'services/salones_api_service.dart';
+import 'utils/activity_store.dart';
+import 'utils/favorites_store.dart';
 import 'utils/salones_filtering.dart';
 import 'widgets/main_bottom_nav.dart';
 import 'widgets/salones/reservation_bottom.dart';
@@ -26,19 +31,10 @@ class _SalonesScreenState extends State<SalonesScreen> {
   static const Color _accentIndigo = Color(0xFF3D3B8E);
   static const Duration _requestTimeout = Duration(seconds: 12);
 
-  static const List<String> _types = [
-    'Todos',
-    'Fiestas',
-    'Corporativo',
-    'Reuniones',
-    'Conferencias',
-  ];
-
   static const List<String> _sortOptions = [
     'Mejor calificacion',
     'Menor precio',
     'Mayor capacidad',
-    'Mas cercano',
   ];
 
   final TextEditingController _searchController = TextEditingController();
@@ -47,6 +43,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
   bool _onlyAvailable = false;
   bool _isLoading = true;
   bool _hasError = false;
+  bool _rangesInitialized = false;
   String _errorMessage = 'No se pudo cargar la búsqueda';
 
   String _selectedType = 'Todos';
@@ -54,17 +51,26 @@ class _SalonesScreenState extends State<SalonesScreen> {
   RangeValues _capacityRange = const RangeValues(20, 200);
   RangeValues _priceRange = const RangeValues(300000, 1300000);
 
+  late final CatalogosApiService _catalogosApiService;
   late final SalonesApiService _apiService;
   final List<SalonViewModel> _salons = [];
+  final List<CatalogItem> _categorias = [];
+  final List<FranjaHorariaItem> _franjas = [];
+  List<String> _categoryOptions = ['Todos'];
 
   @override
   void initState() {
     super.initState();
+    _catalogosApiService = CatalogosApiService(
+      baseUrl: ApiConfig.baseUrl,
+      requestTimeout: _requestTimeout,
+    );
     _apiService = SalonesApiService(
       baseUrl: ApiConfig.baseUrl,
       requestTimeout: _requestTimeout,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchCatalogos();
       _fetchSalons();
     });
   }
@@ -111,10 +117,29 @@ class _SalonesScreenState extends State<SalonesScreen> {
         return;
       }
 
+      RangeValues capacityRange = _capacityRange;
+      RangeValues priceRange = _priceRange;
+      bool rangesInitialized = _rangesInitialized;
+
+      if (!_rangesInitialized && loaded.isNotEmpty) {
+        capacityRange = _rangeFromInts(
+          loaded.map((salon) => salon.capacity).toList(),
+          _capacityRange,
+        );
+        priceRange = _rangeFromDoubles(
+          loaded.map((salon) => salon.price).toList(),
+          _priceRange,
+        );
+        rangesInitialized = true;
+      }
+
       setState(() {
         _salons
           ..clear()
           ..addAll(loaded);
+        _capacityRange = capacityRange;
+        _priceRange = priceRange;
+        _rangesInitialized = rangesInitialized;
         _isLoading = false;
         _hasError = false;
       });
@@ -178,6 +203,15 @@ class _SalonesScreenState extends State<SalonesScreen> {
       return;
     }
 
+    if (_franjas.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay franjas horarias disponibles'),
+        ),
+      );
+      return;
+    }
+
     final String? code = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -185,6 +219,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
       builder: (_) => ReservationBottomSheet(
         salonName: salon.name,
         salonCapacity: salon.capacity,
+        franjas: _franjas,
         onSubmit: (request) =>
             _createReservation(salonId: salon.id, request: request),
       ),
@@ -228,9 +263,75 @@ class _SalonesScreenState extends State<SalonesScreen> {
     setState(() {
       _selectedType = 'Todos';
       _onlyAvailable = false;
-      _capacityRange = const RangeValues(20, 200);
-      _priceRange = const RangeValues(300000, 1300000);
+      _capacityRange = _rangeFromInts(
+        _salons.map((salon) => salon.capacity).toList(),
+        const RangeValues(20, 200),
+      );
+      _priceRange = _rangeFromDoubles(
+        _salons.map((salon) => salon.price).toList(),
+        const RangeValues(300000, 1300000),
+      );
     });
+  }
+
+  RangeValues _rangeFromInts(List<int> values, RangeValues fallback) {
+    if (values.isEmpty) {
+      return fallback;
+    }
+    final int minValue = values.reduce((a, b) => a < b ? a : b);
+    final int maxValue = values.reduce((a, b) => a > b ? a : b);
+    final double start = minValue.toDouble();
+    final double end = (maxValue == minValue)
+        ? minValue.toDouble() + 1
+        : maxValue.toDouble();
+    return RangeValues(start, end);
+  }
+
+  RangeValues _rangeFromDoubles(List<double> values, RangeValues fallback) {
+    if (values.isEmpty) {
+      return fallback;
+    }
+    final double minValue = values.reduce((a, b) => a < b ? a : b);
+    final double maxValue = values.reduce((a, b) => a > b ? a : b);
+    final double end = (maxValue == minValue) ? minValue + 1 : maxValue;
+    return RangeValues(minValue, end);
+  }
+
+  Future<void> _fetchCatalogos() async {
+    try {
+      final results = await Future.wait([
+        _catalogosApiService.fetchCategorias(),
+        _catalogosApiService.fetchFranjasHorarias(),
+      ]);
+
+      if (!mounted) {
+        return;
+      }
+
+      final List<CatalogItem> categorias = results[0] as List<CatalogItem>;
+      final List<FranjaHorariaItem> franjas =
+          results[1] as List<FranjaHorariaItem>;
+
+      final List<String> options = [
+        'Todos',
+        ...categorias.map((item) => item.name),
+      ];
+
+      setState(() {
+        _categorias
+          ..clear()
+          ..addAll(categorias);
+        _franjas
+          ..clear()
+          ..addAll(franjas);
+        _categoryOptions = options;
+        if (!_categoryOptions.contains(_selectedType)) {
+          _selectedType = 'Todos';
+        }
+      });
+    } catch (_) {
+      // Keep defaults when catalogs are unavailable.
+    }
   }
 
   @override
@@ -263,7 +364,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
               onChanged: (_) => setState(() {}),
               onSubmitted: (_) => _runSearch(),
               decoration: InputDecoration(
-                hintText: 'Buscar por nombre, zona o tipo...',
+                hintText: 'Buscar por nombre, zona o categoria...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: Colors.white,
@@ -372,11 +473,11 @@ class _SalonesScreenState extends State<SalonesScreen> {
           DropdownButtonFormField<String>(
             initialValue: _selectedType,
             decoration: const InputDecoration(
-              labelText: 'Tipo de salon',
+              labelText: 'Categoria de salon',
               border: OutlineInputBorder(),
               contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             ),
-            items: _types
+            items: _categoryOptions
                 .map(
                   (value) => DropdownMenuItem(value: value, child: Text(value)),
                 )
@@ -519,21 +620,12 @@ class _SalonesScreenState extends State<SalonesScreen> {
           const Icon(Icons.search_off, size: 52, color: Colors.grey),
           const SizedBox(height: 10),
           const Text(
-            'No encontramos salones con esos filtros',
+            'No encontramos salones',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Center(
-            child: OutlinedButton(
-              onPressed: () {
-                setState(() {
-                  _searchController.clear();
-                });
-                _resetFilters();
-              },
-              child: const Text('Limpiar filtros'),
-            ),
           ),
         ],
       );
@@ -548,10 +640,23 @@ class _SalonesScreenState extends State<SalonesScreen> {
           salon: salon,
           primaryDark: _primaryDark,
           accentIndigo: _accentIndigo,
+          isFavorite: FavoritesStore.isFavorite(salon.id),
+          onToggleFavorite: () {
+            setState(() {
+              FavoritesStore.toggle(salon.id);
+            });
+          },
           onReserve: () => _handleReserveTap(salon),
           onViewDetail: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Detalle de ${salon.name} en desarrollo')),
+            ActivityStore.addView(id: salon.id, name: salon.name);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SalonDetailScreen(
+                  salon: salon,
+                  onReserve: () => _handleReserveTap(salon),
+                ),
+              ),
             );
           },
         );

@@ -4,14 +4,14 @@ import '../../../auth/auth_controller.dart';
 
 class ForgotPasswordDialog extends StatefulWidget {
   const ForgotPasswordDialog({
-    required this.usernameValidator,
+    required this.identifierValidator,
     required this.passwordValidator,
     required this.accentIndigo,
     required this.onSubmit,
     super.key,
   });
 
-  final String? Function(String?) usernameValidator;
+  final String? Function(String?) identifierValidator;
   final String? Function(String?) passwordValidator;
   final Color accentIndigo;
   final Future<AuthResult> Function(String username, String password) onSubmit;
@@ -83,9 +83,9 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             children: [
               TextFormField(
                 controller: _usernameController,
-                validator: widget.usernameValidator,
+                validator: widget.identifierValidator,
                 decoration: const InputDecoration(
-                  labelText: 'Usuario',
+                  labelText: 'Usuario o correo',
                   border: OutlineInputBorder(),
                 ),
               ),

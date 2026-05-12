@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../models/reservation_history.dart';
+import '../utils/screen_formatters.dart';
 
 class HistorialApiService {
   const HistorialApiService({
@@ -53,6 +54,16 @@ class HistorialApiService {
       return value.toInt();
     }
     return int.tryParse('$value') ?? fallback;
+  }
+
+  static double _asDouble(dynamic value, {double fallback = 0}) {
+    if (value is double) {
+      return value;
+    }
+    if (value is num) {
+      return value.toDouble();
+    }
+    return double.tryParse('$value') ?? fallback;
   }
 
   static String _monthNameEs(int month) {
@@ -116,8 +127,13 @@ class HistorialApiService {
     final String salon = (raw['salon'] as String?) ?? 'Salon';
     final String codigo = (raw['codigo'] as String?) ?? 'RES-000';
     final DateTime fecha = DateTime.tryParse('${raw['fecha']}') ?? DateTime.now();
-    final String hora = (raw['hora'] as String?) ?? 'Mañana';
+    final String franja = (raw['franja_horaria'] as String?) ?? 'Sin franja';
     final String estado = _normalizeStatus((raw['estado'] as String?) ?? 'Pendiente');
+    final double monto = _asDouble(raw['monto']);
+    final double abono = _asDouble(raw['abono']);
+    final String payment = abono > 0
+      ? 'Abono: \$${ScreenFormatters.formatCurrency(abono)}'
+      : 'No registrado';
 
     final String trimmedSalon = salon.trim();
     final String initial = trimmedSalon.isEmpty
@@ -129,12 +145,12 @@ class HistorialApiService {
       salon: salon,
       initial: initial,
       color: _avatarColor(estado),
-      dateLabel: _formatDateLabel(fecha, hora),
+        dateLabel: _formatDateLabel(fecha, franja),
       month: _monthLabel(fecha),
       guests: _asInt(raw['asistentes']),
       status: estado,
-      payment: 'No registrado',
-      amount: _asInt(raw['precio']),
+        payment: payment,
+        amount: monto,
       notes: (raw['notas'] as String?)?.trim().isNotEmpty == true
           ? (raw['notas'] as String).trim()
           : 'Sin notas',

@@ -18,8 +18,8 @@ class SalonesFiltering {
       if (salon.zone.toLowerCase().contains(normalizedQuery)) {
         suggestions.add(salon.zone);
       }
-      if (salon.type.toLowerCase().contains(normalizedQuery)) {
-        suggestions.add(salon.type);
+      if (salon.category.toLowerCase().contains(normalizedQuery)) {
+        suggestions.add(salon.category);
       }
     }
 
@@ -42,15 +42,15 @@ class SalonesFiltering {
           normalizedQuery.isEmpty ||
           salon.name.toLowerCase().contains(normalizedQuery) ||
           salon.zone.toLowerCase().contains(normalizedQuery) ||
-          salon.type.toLowerCase().contains(normalizedQuery);
-      final bool typeMatch = selectedType == 'Todos' || salon.type == selectedType;
+          salon.category.toLowerCase().contains(normalizedQuery);
+        final bool typeMatch =
+          selectedType == 'Todos' || salon.category == selectedType;
       final bool availabilityMatch = !onlyAvailable || salon.available;
       final bool capacityMatch =
           salon.capacity >= capacityRange.start.round() &&
           salon.capacity <= capacityRange.end.round();
       final bool priceMatch =
-          salon.price >= priceRange.start.round() &&
-          salon.price <= priceRange.end.round();
+          salon.price >= priceRange.start && salon.price <= priceRange.end;
 
       return queryMatch &&
           typeMatch &&
@@ -65,9 +65,6 @@ class SalonesFiltering {
       }
       if (selectedSort == 'Mayor capacidad') {
         return b.capacity.compareTo(a.capacity);
-      }
-      if (selectedSort == 'Mas cercano') {
-        return a.distance.compareTo(b.distance);
       }
       return b.rating.compareTo(a.rating);
     });

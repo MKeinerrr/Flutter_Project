@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../models/catalog_item.dart';
 import '../../models/reservation_request.dart';
 
 class ReservationBottomSheet extends StatefulWidget {
@@ -6,11 +7,13 @@ class ReservationBottomSheet extends StatefulWidget {
     super.key,
     required this.salonName,
     required this.salonCapacity,
+    required this.franjas,
     required this.onSubmit,
   });
 
   final String salonName;
   final int salonCapacity;
+  final List<FranjaHorariaItem> franjas;
   final Future<String> Function(ReservationRequest request) onSubmit;
 
   @override
@@ -25,8 +28,16 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
   final TextEditingController _notesController = TextEditingController();
 
   DateTime? _selectedDate;
-  String _selectedHora = 'Mañana';
+  int? _selectedFranjaId;
   bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.franjas.isNotEmpty) {
+      _selectedFranjaId = widget.franjas.first.id;
+    }
+  }
 
   @override
   void dispose() {
@@ -66,13 +77,20 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
       return;
     }
 
+    if (_selectedFranjaId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona una franja horaria')),
+      );
+      return;
+    }
+
     setState(() => _submitting = true);
 
     try {
       final String code = await widget.onSubmit(
         ReservationRequest(
           fecha: _selectedDate!,
-          hora: _selectedHora,
+          franjaHorariaId: _selectedFranjaId!,
           asistentes: int.parse(_attendeesController.text.trim()),
           notas: _notesController.text.trim(),
         ),
@@ -130,23 +148,22 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
                 ),
               ),
               const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedHora,
+              DropdownButtonFormField<int>(
+                initialValue: _selectedFranjaId,
                 decoration: const InputDecoration(
                   labelText: 'Franja horaria',
                   border: OutlineInputBorder(),
                 ),
-                items: const ['Mañana', 'Tarde', 'Noche']
+                hint: const Text('Sin franjas disponibles'),
+                items: widget.franjas
                     .map(
-                      (value) =>
-                          DropdownMenuItem(value: value, child: Text(value)),
+                      (franja) => DropdownMenuItem(
+                        value: franja.id,
+                        child: Text(franja.label),
+                      ),
                     )
                     .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedHora = value);
-                  }
-                },
+                onChanged: (value) => setState(() => _selectedFranjaId = value),
               ),
               const SizedBox(height: 10),
               TextFormField(

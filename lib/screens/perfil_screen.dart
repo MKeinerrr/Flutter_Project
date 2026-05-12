@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
 import 'auth_screen.dart';
+import 'favoritos_screen.dart';
+import 'billetera_screen.dart';
+import 'perfil_config_screen.dart';
 import 'widgets/main_bottom_nav.dart';
 import 'widgets/perfil/profile_action.dart';
 import 'widgets/perfil/profile_header.dart';
@@ -30,6 +33,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
+  Future<bool> _ensureLoggedIn() async {
+    if (AuthController.instance.isLoggedIn) {
+      return true;
+    }
+
+    await _openAuth(AuthMode.login);
+    return AuthController.instance.isLoggedIn;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,39 +63,52 @@ class _PerfilScreenState extends State<PerfilScreen> {
           ),
           const SizedBox(height: 20),
           ProfileActionTile(
-            icon: Icons.event_note,
-            title: 'Mis reservas',
-            subtitle: 'Consulta y administra tus reservas',
+            icon: Icons.manage_accounts,
+            title: 'Configuración',
+            subtitle: 'Idioma, datos personales, contraseñas y más',
             accentIndigo: _accentIndigo,
             primaryDark: _primaryDark,
-            onTap: () {
-              if (!AuthController.instance.isLoggedIn) {
-                _openAuth(AuthMode.login);
+            onTap: () async {
+              if (!await _ensureLoggedIn()) {
                 return;
               }
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Tus reservas estarán aquí pronto'),
-                ),
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PerfilConfigScreen()),
               );
             },
           ),
           ProfileActionTile(
             icon: Icons.account_balance_wallet,
             title: 'Mi billetera',
-            subtitle: 'Métodos de pago y saldo disponible',
+            subtitle: 'Métodos de pago para tus reservas',
             accentIndigo: _accentIndigo,
             primaryDark: _primaryDark,
-            onTap: () {},
+            onTap: () async {
+              if (!await _ensureLoggedIn()) {
+                return;
+              }
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const BilleteraScreen()),
+              );
+            },
           ),
           ProfileActionTile(
             icon: Icons.timeline,
-            title: 'Mi actividad',
-            subtitle: 'Revisa tus movimientos recientes',
+            title: 'Mis favoritos',
+            subtitle: 'Salones que quieres reservar más rápido',
             accentIndigo: _accentIndigo,
             primaryDark: _primaryDark,
-            onTap: () {},
+            onTap: () async {
+              if (!await _ensureLoggedIn()) {
+                return;
+              }
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const FavoritosScreen()),
+              );
+            },
           ),
           ProfileActionTile(
             icon: Icons.help_outline,

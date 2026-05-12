@@ -7,27 +7,37 @@ class SalonViewModel {
     required this.zone,
     required this.capacity,
     required this.price,
-    required this.type,
+    required this.category,
     required this.available,
     required this.rating,
-    required this.distance,
     required this.badges,
     required this.colorA,
     required this.colorB,
+    required this.slug,
+    this.level,
+    this.photoUrl,
+    this.videoUrl,
+    this.description,
+    this.policies,
   });
 
   final int id;
   final String name;
   final String zone;
   final int capacity;
-  final int price;
-  final String type;
+  final double price;
+  final String category;
   final bool available;
   final double rating;
-  final double distance;
   final List<String> badges;
   final Color colorA;
   final Color colorB;
+  final String slug;
+  final int? level;
+  final String? photoUrl;
+  final String? videoUrl;
+  final String? description;
+  final String? policies;
 
   static int _asInt(dynamic value, {int fallback = 0}) {
     if (value is int) {
@@ -49,8 +59,8 @@ class SalonViewModel {
     return double.tryParse('$value') ?? fallback;
   }
 
-  static Map<String, Color> _resolveTypeColors(String type) {
-    switch (type) {
+  static Map<String, Color> _resolveCategoryColors(String category) {
+    switch (category) {
       case 'Corporativo':
         return const {'colorA': Color(0xFF3B8AA3), 'colorB': Color(0xFF7EC8E3)};
       case 'Conferencias':
@@ -63,8 +73,8 @@ class SalonViewModel {
   }
 
   factory SalonViewModel.fromApi(Map<String, dynamic> raw) {
-    final String type = (raw['tipo'] as String?) ?? 'Fiestas';
-    final Map<String, Color> colors = _resolveTypeColors(type);
+    final String category = (raw['categoria'] as String?) ?? 'Salon';
+    final Map<String, Color> colors = _resolveCategoryColors(category);
     final dynamic badgesRaw = raw['badges'];
 
     final List<String> badges = badgesRaw is List<dynamic>
@@ -72,18 +82,23 @@ class SalonViewModel {
         : const [];
 
     return SalonViewModel(
-      id: _asInt(raw['id']),
+      id: _asInt(raw['id'] ?? raw['id_salon']),
       name: (raw['nombre'] as String?) ?? '',
       zone: (raw['zona'] as String?) ?? '',
       capacity: _asInt(raw['capacidad']),
-      price: _asInt(raw['precio']),
-      type: type,
-      available: raw['disponible'] == true,
+      price: _asDouble(raw['precio']),
+      category: category,
+      available: raw['estado'] == true || raw['estado'] == 1,
       rating: _asDouble(raw['calificacion']),
-      distance: _asDouble(raw['distancia_km']),
       badges: badges,
       colorA: colors['colorA']!,
       colorB: colors['colorB']!,
+      slug: (raw['slug'] as String?) ?? '',
+      level: raw['nivel'] == null ? null : _asInt(raw['nivel']),
+      photoUrl: raw['foto'] as String?,
+      videoUrl: raw['video'] as String?,
+      description: raw['descripcion'] as String?,
+      policies: raw['politicas'] as String?,
     );
   }
 }
