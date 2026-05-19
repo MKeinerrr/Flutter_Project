@@ -19,6 +19,18 @@ class MiReservaService {
     required String token,
     DateTime? now,
   }) async {
+    final List<ReservationHistoryItem> active =
+        await fetchActiveReservations(token: token, now: now);
+    if (active.isEmpty) {
+      return null;
+    }
+    return active.first;
+  }
+
+  Future<List<ReservationHistoryItem>> fetchActiveReservations({
+    required String token,
+    DateTime? now,
+  }) async {
     final List<ReservationHistoryItem> history = await _historialApiService
         .fetchHistory(token: token);
 
@@ -34,10 +46,7 @@ class MiReservaService {
         .toList()
       ..sort((a, b) => a.sortDate.compareTo(b.sortDate));
 
-    if (active.isEmpty) {
-      return null;
-    }
-    return active.first;
+    return active;
   }
 
   Future<MiReservaViewModel> buildViewModel({

@@ -362,8 +362,8 @@ class _HistorialScreenState extends State<HistorialScreen> {
               icon: const Icon(Icons.login),
               label: const Text('Iniciar sesión'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: HistorialScreen.primaryDark,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.bg0,
               ),
             ),
           ],

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/reservation_request.dart';
 import '../models/salon_view_model.dart';
+import '../models/rating_state.dart';
 
 class SalonesApiService {
   const SalonesApiService({
@@ -102,6 +103,35 @@ class SalonesApiService {
     throw Exception(
       (responsePayload['detail'] as String?) ?? 'No se pudo guardar la calificacion',
     );
+  }
+
+  Future<RatingState?> fetchMyRating({
+    required String token,
+    required int salonId,
+  }) async {
+    if (token.isEmpty) {
+      return null;
+    }
+
+    final Uri url = Uri.parse('$baseUrl/salones/$salonId/calificaciones/mias');
+    final response = await http.get(url, headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    }).timeout(requestTimeout);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      final dynamic parsed = json.decode(response.body);
+      if (parsed is Map<String, dynamic>) {
+        final int? cantidad = parsed['cantidad'] is num ? (parsed['cantidad'] as num).toInt() : null;
+        final String? comentario = parsed['comentario'] as String?;
+        if (cantidad != null) {
+          return RatingState(score: cantidad, comment: comentario ?? '');
+        }
+      }
+      return null;
+    }
+
+    return null;
   }
 
   Future<void> cancelReservation({

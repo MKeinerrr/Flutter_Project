@@ -9,12 +9,14 @@ class ReservationBottomSheet extends StatefulWidget {
     required this.salonName,
     required this.salonCapacity,
     required this.franjas,
+    required this.metodos,
     required this.onSubmit,
   });
 
   final String salonName;
   final int salonCapacity;
   final List<FranjaHorariaItem> franjas;
+  final List<MetodoPagoItem> metodos;
   final Future<String> Function(ReservationRequest request) onSubmit;
 
   @override
@@ -30,6 +32,7 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
 
   DateTime? _selectedDate;
   int? _selectedFranjaId;
+  int? _selectedMetodoId;
   bool _submitting = false;
 
   @override
@@ -37,6 +40,9 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
     super.initState();
     if (widget.franjas.isNotEmpty) {
       _selectedFranjaId = widget.franjas.first.id;
+    }
+    if (widget.metodos.isNotEmpty) {
+      _selectedMetodoId = widget.metodos.first.id;
     }
   }
 
@@ -94,6 +100,7 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
           franjaHorariaId: _selectedFranjaId!,
           asistentes: int.parse(_attendeesController.text.trim()),
           notas: _notesController.text.trim(),
+          metodoId: _selectedMetodoId,
         ),
       );
 
@@ -106,9 +113,32 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
       if (!mounted) {
         return;
       }
+      final String message = error
+          .toString()
+          .replaceFirst('Exception: ', '')
+          .trim();
+      final bool isDuplicateReservation = message
+          .toLowerCase()
+          .contains('ya existe una reserva');
+      if (isDuplicateReservation) {
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Reserva no disponible'),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(error.toString().replaceFirst('Exception: ', '')),
+          content: Text(message),
         ),
       );
     } finally {
@@ -184,6 +214,32 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Metodo de pago',
+                style: TextStyle(
+                  color: AppColors.text2,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: widget.metodos
+                    .map(
+                      (metodo) => ChoiceChip(
+                        label: Text(metodo.name),
+                        selected: _selectedMetodoId == metodo.id,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _selectedMetodoId = metodo.id);
+                          }
+                        },
+                      ),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 10),
               TextFormField(

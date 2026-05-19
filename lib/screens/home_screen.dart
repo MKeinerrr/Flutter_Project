@@ -72,19 +72,17 @@ class _HomeScreenState extends State<HomeScreen> {
       final DateTime now = DateTime.now();
       final DateTime today = DateTime(now.year, now.month, now.day);
 
-      final List<ReservationHistoryItem> confirmedUpcoming =
-          history
-              .where(
-                (item) =>
-                    item.status == 'Confirmada' &&
-                    !item.sortDate.isBefore(today),
-              )
-              .toList()
-            ..sort((a, b) => a.sortDate.compareTo(b.sortDate));
+      final List<ReservationHistoryItem> upcoming = history
+          .where(
+            (item) =>
+                (item.status == 'Confirmada' || item.status == 'Pendiente') &&
+                !item.sortDate.isBefore(today),
+          )
+          .toList()
+        ..sort((a, b) => a.sortDate.compareTo(b.sortDate));
 
-      final ReservationHistoryItem? next = confirmedUpcoming.isEmpty
-          ? null
-          : confirmedUpcoming.first;
+      final ReservationHistoryItem? next =
+          upcoming.isEmpty ? null : upcoming.first;
 
       if (!mounted) {
         return;

@@ -61,6 +61,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
   final List<SalonViewModel> _salons = [];
   final List<CatalogItem> _categorias = [];
   final List<FranjaHorariaItem> _franjas = [];
+  final List<MetodoPagoItem> _metodos = [];
   List<String> _categoryOptions = ['Todos'];
 
   @override
@@ -243,6 +244,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
         salonName: salon.name,
         salonCapacity: salon.capacity,
         franjas: _franjas,
+        metodos: _metodos,
         onSubmit: (request) =>
             _createReservation(salonId: salon.id, request: request),
       ),
@@ -352,6 +354,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
       final results = await Future.wait([
         _catalogosApiService.fetchCategorias(),
         _catalogosApiService.fetchFranjasHorarias(),
+        _catalogosApiService.fetchMetodos(),
       ]);
 
       if (!mounted) {
@@ -361,6 +364,17 @@ class _SalonesScreenState extends State<SalonesScreen> {
       final List<CatalogItem> categorias = results[0] as List<CatalogItem>;
       final List<FranjaHorariaItem> franjas =
           results[1] as List<FranjaHorariaItem>;
+        final List<MetodoPagoItem> metodos =
+          results[2] as List<MetodoPagoItem>;
+
+        final List<String> preferredMetodos = ['Efectivo', 'Transferencia'];
+        final Map<String, MetodoPagoItem> metodoByName = {
+        for (final metodo in metodos) metodo.name.toLowerCase(): metodo,
+        };
+        final List<MetodoPagoItem> paymentOptions = preferredMetodos
+          .map((name) => metodoByName[name.toLowerCase()])
+          .whereType<MetodoPagoItem>()
+          .toList();
 
       final List<String> options = [
         'Todos',
@@ -374,6 +388,9 @@ class _SalonesScreenState extends State<SalonesScreen> {
         _franjas
           ..clear()
           ..addAll(franjas);
+        _metodos
+          ..clear()
+          ..addAll(paymentOptions.isEmpty ? metodos : paymentOptions);
         _categoryOptions = options;
         if (!_categoryOptions.contains(_selectedType)) {
           _selectedType = 'Todos';

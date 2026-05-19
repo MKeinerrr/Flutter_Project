@@ -58,7 +58,7 @@ class MiReservaGuestState extends StatelessWidget {
               icon: const Icon(Icons.login),
               label: const Text('Iniciar sesion'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _miReservaPrimaryDark,
+                backgroundColor: AppColors.accent,
                 foregroundColor: AppColors.bg0,
               ),
             ),

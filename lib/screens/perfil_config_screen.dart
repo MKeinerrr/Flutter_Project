@@ -397,12 +397,6 @@ class _PerfilConfigScreenState extends State<PerfilConfigScreen> {
                 groupValue: _language,
                 onChanged: (value) => Navigator.pop(context, value),
               ),
-              RadioListTile<String>(
-                title: const Text('Ingles'),
-                value: 'Ingles',
-                groupValue: _language,
-                onChanged: (value) => Navigator.pop(context, value),
-              ),
             ],
           ),
         );

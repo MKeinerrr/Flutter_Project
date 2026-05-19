@@ -110,90 +110,21 @@ class _BilleteraScreenState extends State<BilleteraScreen> {
       await _openLogin();
       return;
     }
-
-    MetodoPagoItem? selected;
-    final TextEditingController aliasController = TextEditingController();
-    final TextEditingController numeroController = TextEditingController();
-
-    final bool? accepted = await showDialog<bool>(
+    final _AddMetodoDialogResult? result = await showDialog<_AddMetodoDialogResult>(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return AlertDialog(
-              title: const Text('Agregar metodo de pago'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    DropdownButtonFormField<MetodoPagoItem>(
-                      initialValue: selected,
-                      items: _catalog
-                          .map(
-                            (item) => DropdownMenuItem<MetodoPagoItem>(
-                              value: item,
-                              child: Text(item.name),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) => setStateDialog(() {
-                        selected = value;
-                      }),
-                      decoration: const InputDecoration(
-                        labelText: 'Metodo',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: aliasController,
-                      decoration: const InputDecoration(
-                        labelText: 'Alias (opcional)',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: numeroController,
-                      decoration: const InputDecoration(
-                        labelText: 'Numero o referencia',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  onPressed: selected == null
-                      ? null
-                      : () => Navigator.pop(context, true),
-                  child: const Text('Guardar'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (context) => _AddMetodoDialog(catalog: _catalog),
     );
 
-    if (accepted != true || selected == null) {
-      aliasController.dispose();
-      numeroController.dispose();
+    if (result == null) {
       return;
     }
 
     try {
       await _walletApiService.addMethod(
         token: token,
-        metodoId: selected!.id,
-        alias: aliasController.text.trim().isEmpty
-            ? null
-            : aliasController.text.trim(),
-        numero: numeroController.text.trim().isEmpty
-            ? null
-            : numeroController.text.trim(),
+        metodoId: result.metodo.id,
+        alias: result.alias,
+        numero: result.numero,
       );
       if (!mounted) {
         return;
@@ -206,9 +137,6 @@ class _BilleteraScreenState extends State<BilleteraScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$error')),
       );
-    } finally {
-      aliasController.dispose();
-      numeroController.dispose();
     }
   }
 
@@ -288,6 +216,118 @@ class _BilleteraScreenState extends State<BilleteraScreen> {
                         );
                       },
                     ),
+    );
+  }
+}
+
+class _AddMetodoDialogResult {
+  const _AddMetodoDialogResult({
+    required this.metodo,
+    this.alias,
+    this.numero,
+  });
+
+  final MetodoPagoItem metodo;
+  final String? alias;
+  final String? numero;
+}
+
+class _AddMetodoDialog extends StatefulWidget {
+  const _AddMetodoDialog({required this.catalog});
+
+  final List<MetodoPagoItem> catalog;
+
+  @override
+  State<_AddMetodoDialog> createState() => _AddMetodoDialogState();
+}
+
+class _AddMetodoDialogState extends State<_AddMetodoDialog> {
+  MetodoPagoItem? _selected;
+  late final TextEditingController _aliasController;
+  late final TextEditingController _numeroController;
+
+  @override
+  void initState() {
+    super.initState();
+    _aliasController = TextEditingController();
+    _numeroController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _aliasController.dispose();
+    _numeroController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_selected == null) {
+      return;
+    }
+    final String alias = _aliasController.text.trim();
+    final String numero = _numeroController.text.trim();
+    Navigator.pop(
+      context,
+      _AddMetodoDialogResult(
+        metodo: _selected!,
+        alias: alias.isEmpty ? null : alias,
+        numero: numero.isEmpty ? null : numero,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Agregar metodo de pago'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<MetodoPagoItem>(
+              initialValue: _selected,
+              items: widget.catalog
+                  .map(
+                    (item) => DropdownMenuItem<MetodoPagoItem>(
+                      value: item,
+                      child: Text(item.name),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) => setState(() {
+                _selected = value;
+              }),
+              decoration: const InputDecoration(
+                labelText: 'Metodo',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _aliasController,
+              decoration: const InputDecoration(
+                labelText: 'Alias (opcional)',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _numeroController,
+              decoration: const InputDecoration(
+                labelText: 'Numero o referencia',
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _selected == null ? null : _submit,
+          child: const Text('Guardar'),
+        ),
+      ],
     );
   }
 }

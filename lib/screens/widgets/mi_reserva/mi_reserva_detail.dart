@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../models/mi_reserva_view_model.dart';
+import '../../models/rating_state.dart';
 
 class MiReservaDetail extends StatelessWidget {
   const MiReservaDetail({
@@ -10,6 +11,7 @@ class MiReservaDetail extends StatelessWidget {
     required this.accentIndigo,
     required this.isSubmittingRating,
     required this.onSubmitRating,
+    this.ratingState,
     super.key,
   });
 
@@ -18,6 +20,7 @@ class MiReservaDetail extends StatelessWidget {
   final Color accentIndigo;
   final bool isSubmittingRating;
   final Future<void> Function(int score, String comment) onSubmitRating;
+  final RatingState? ratingState;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +90,7 @@ class MiReservaDetail extends StatelessWidget {
         _RatingSection(
           isSubmitting: isSubmittingRating,
           onSubmit: onSubmitRating,
+          ratingState: ratingState,
         ),
       ],
     );
@@ -298,10 +302,12 @@ class _RatingSection extends StatefulWidget {
   const _RatingSection({
     required this.isSubmitting,
     required this.onSubmit,
+    this.ratingState,
   });
 
   final bool isSubmitting;
   final Future<void> Function(int score, String comment) onSubmit;
+  final RatingState? ratingState;
 
   @override
   State<_RatingSection> createState() => _RatingSectionState();
@@ -310,6 +316,18 @@ class _RatingSection extends StatefulWidget {
 class _RatingSectionState extends State<_RatingSection> {
   int _score = 0;
   final TextEditingController _commentController = TextEditingController();
+  bool _locked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final RatingState? ratingState = widget.ratingState;
+    if (ratingState != null) {
+      _score = ratingState.score;
+      _commentController.text = ratingState.comment;
+      _locked = true;
+    }
+  }
 
   @override
   void dispose() {
@@ -338,7 +356,7 @@ class _RatingSectionState extends State<_RatingSection> {
               ...List.generate(
                 5,
                 (index) => IconButton(
-                  onPressed: widget.isSubmitting
+                  onPressed: widget.isSubmitting || _locked
                       ? null
                       : () => setState(() => _score = index + 1),
                   icon: Icon(
@@ -352,6 +370,7 @@ class _RatingSectionState extends State<_RatingSection> {
           TextField(
             controller: _commentController,
             maxLines: 3,
+            readOnly: _locked,
             decoration: const InputDecoration(
               hintText: 'Comparte tu experiencia (opcional)',
             ),
@@ -360,7 +379,7 @@ class _RatingSectionState extends State<_RatingSection> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: widget.isSubmitting || _score == 0
+              onPressed: widget.isSubmitting || _score == 0 || _locked
                   ? null
                   : () async {
                       await widget.onSubmit(
@@ -368,7 +387,13 @@ class _RatingSectionState extends State<_RatingSection> {
                         _commentController.text,
                       );
                     },
-              child: Text(widget.isSubmitting ? 'Enviando...' : 'Enviar'),
+              child: Text(
+                _locked
+                    ? 'Enviado'
+                    : widget.isSubmitting
+                    ? 'Enviando...'
+                    : 'Enviar',
+              ),
             ),
           ),
         ],
