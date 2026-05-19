@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../auth/auth_controller.dart';
 import '../config/api_config.dart';
+import '../theme/app_colors.dart';
 import 'auth_screen.dart';
 import 'models/user_profile.dart';
 import 'services/profile_api_service.dart';
@@ -17,8 +18,8 @@ class PerfilConfigScreen extends StatefulWidget {
 }
 
 class _PerfilConfigScreenState extends State<PerfilConfigScreen> {
-  static const Color _primaryDark = Color(0xFF1A0A4C);
-  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static const Color _primaryDark = AppColors.bg1;
+  static const Color _accentIndigo = AppColors.accent;
 
   final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _passwordFormKey = GlobalKey<FormState>();
@@ -282,7 +283,7 @@ class _PerfilConfigScreenState extends State<PerfilConfigScreen> {
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _accentIndigo,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.bg0,
               ),
               child: _savingProfile
                   ? const SizedBox(
@@ -365,7 +366,7 @@ class _PerfilConfigScreenState extends State<PerfilConfigScreen> {
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _accentIndigo,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.bg0,
               ),
               child: _savingPassword
                   ? const SizedBox(
@@ -552,6 +553,7 @@ class _ConfigTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
+      color: AppColors.bg2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         leading: CircleAvatar(
@@ -560,10 +562,16 @@ class _ConfigTile extends StatelessWidget {
         ),
         title: Text(
           title,
-          style: TextStyle(fontWeight: FontWeight.w700, color: primaryDark),
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            color: AppColors.text1,
+          ),
         ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(color: AppColors.text1),
+        ),
+        trailing: const Icon(Icons.chevron_right, color: AppColors.text1),
         onTap: onTap,
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({
@@ -25,7 +26,7 @@ class ProfileHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.bg2,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -43,12 +44,12 @@ class ProfileHeader extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: accentIndigo.withAlpha(60), width: 2),
-              color: Colors.grey[100],
+              color: AppColors.bg3,
             ),
             child: const Icon(
               Icons.person_outline,
               size: 38,
-              color: Colors.grey,
+              color: AppColors.text3,
             ),
           ),
           const SizedBox(width: 16),
@@ -61,7 +62,7 @@ class ProfileHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: primaryDark,
+                    color: AppColors.text1,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -69,7 +70,7 @@ class ProfileHeader extends StatelessWidget {
                   isLoggedIn
                       ? 'Ya puedes reservar y administrar tu cuenta'
                       : 'Inicia sesión o regístrate para gestionar tu cuenta',
-                  style: const TextStyle(color: Colors.grey),
+                  style: const TextStyle(color: AppColors.text2),
                 ),
                 const SizedBox(height: 12),
                 if (!isLoggedIn)
@@ -80,16 +81,16 @@ class ProfileHeader extends StatelessWidget {
                       ElevatedButton(
                         onPressed: onLogin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryDark,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: AppColors.bg0,
                         ),
                         child: const Text('Iniciar sesión'),
                       ),
                       OutlinedButton(
                         onPressed: onRegister,
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: accentIndigo,
-                          side: BorderSide(color: accentIndigo),
+                          foregroundColor: AppColors.accent,
+                          side: BorderSide(color: AppColors.accent),
                         ),
                         child: const Text('Registrarse'),
                       ),
@@ -99,8 +100,8 @@ class ProfileHeader extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: onLogout,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryDark,
-                      foregroundColor: Colors.white,
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: AppColors.bg0,
                     ),
                     icon: const Icon(Icons.logout),
                     label: const Text('Cerrar sesión'),

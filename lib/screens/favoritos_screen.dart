@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../auth/auth_controller.dart';
 import '../config/api_config.dart';
+import '../theme/app_colors.dart';
 import 'auth_screen.dart';
 import 'models/salon_view_model.dart';
 import 'services/salones_api_service.dart';
@@ -18,8 +19,8 @@ class FavoritosScreen extends StatefulWidget {
 }
 
 class _FavoritosScreenState extends State<FavoritosScreen> {
-  static const Color _primaryDark = Color(0xFF1A0A4C);
-  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static const Color _primaryDark = AppColors.bg1;
+  static const Color _accentIndigo = AppColors.accent;
   static const Duration _requestTimeout = Duration(seconds: 12);
 
   late final SalonesApiService _apiService;
@@ -115,7 +116,7 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
                         child: Text(
                           'Aun no tienes favoritos',
                           style: TextStyle(
-                            color: _primaryDark,
+                            color: AppColors.text1,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

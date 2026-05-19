@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
 import '../historial_screen.dart';
 import '../home_screen.dart';
 import '../mi_reserva_screen.dart';
@@ -46,8 +47,8 @@ class MainBottomNav extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF1A0A4C),
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: AppColors.accent,
+      unselectedItemColor: AppColors.text3,
       showUnselectedLabels: true,
       onTap: (index) => _navigate(context, index),
       items: const [

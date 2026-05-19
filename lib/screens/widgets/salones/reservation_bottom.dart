@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 import '../../models/catalog_item.dart';
 import '../../models/reservation_request.dart';
 
@@ -21,7 +22,7 @@ class ReservationBottomSheet extends StatefulWidget {
 }
 
 class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
-  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static const Color _accentIndigo = AppColors.accent;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _attendeesController = TextEditingController();
@@ -210,7 +211,7 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _accentIndigo,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.bg0,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
+import '../theme/app_colors.dart';
 import 'home_screen.dart';
 import 'widgets/auth/auth_form_fields.dart';
 import 'widgets/auth/forgot_password_dialog.dart';
@@ -17,7 +18,7 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static const Color _accentIndigo = AppColors.accent;
   static final RegExp _usernameRegex = RegExp(r'^[A-Za-z0-9._-]+$');
   static final RegExp _nameRegex = RegExp(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$');
   static final RegExp _emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
@@ -310,7 +311,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         onPressed: _isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _accentIndigo,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.bg0,
                         ),
                         child: _isLoading
                             ? const SizedBox(
@@ -356,8 +357,8 @@ class _AuthScreenState extends State<AuthScreen> {
                           _message!,
                           style: TextStyle(
                             color: _isSuccessMessage
-                                ? Colors.green
-                                : Colors.red,
+                                ? AppColors.success
+                                : AppColors.danger,
                             fontWeight: FontWeight.w600,
                           ),
                           textAlign: TextAlign.center,

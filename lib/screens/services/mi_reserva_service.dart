@@ -1,12 +1,19 @@
 import '../models/mi_reserva_view_model.dart';
 import '../models/reservation_history.dart';
+import '../models/salon_view_model.dart';
 import 'historial_api_service.dart';
+import 'salones_api_service.dart';
 
 class MiReservaService {
-  const MiReservaService({required HistorialApiService historialApiService})
-    : _historialApiService = historialApiService;
+  const MiReservaService({
+    required HistorialApiService historialApiService,
+    required SalonesApiService salonesApiService,
+  })
+    : _historialApiService = historialApiService,
+      _salonesApiService = salonesApiService;
 
   final HistorialApiService _historialApiService;
+  final SalonesApiService _salonesApiService;
 
   Future<ReservationHistoryItem?> fetchActiveReservation({
     required String token,
@@ -21,7 +28,8 @@ class MiReservaService {
     final List<ReservationHistoryItem> active = history
         .where(
           (item) =>
-              item.status == 'Confirmada' && !item.sortDate.isBefore(today),
+              (item.status == 'Confirmada' || item.status == 'Pendiente') &&
+              !item.sortDate.isBefore(today),
         )
         .toList()
       ..sort((a, b) => a.sortDate.compareTo(b.sortDate));
@@ -32,15 +40,25 @@ class MiReservaService {
     return active.first;
   }
 
-  MiReservaViewModel buildViewModel(ReservationHistoryItem reservation) {
+  Future<MiReservaViewModel> buildViewModel({
+    required ReservationHistoryItem reservation,
+    String? token,
+  }) async {
+    final SalonViewModel salon = await _salonesApiService.fetchSalonById(
+      salonId: reservation.salonId,
+      token: token,
+    );
+
+    final List<String> gallery = salon.photos.isNotEmpty
+        ? salon.photos
+        : (salon.photoUrl != null && salon.photoUrl!.trim().isNotEmpty)
+            ? [salon.photoUrl!.trim()]
+            : const [];
+
     return MiReservaViewModel(
       reservation: reservation,
-      gallery: const [
-        'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1000&q=80',
-        'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1000&q=80',
-        'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1000&q=80',
-        'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1000&q=80',
-      ],
+      salon: salon,
+      gallery: gallery,
       amenities: const [
         'Baños privados',
         'Parqueadero',
@@ -49,23 +67,6 @@ class MiReservaService {
         'Planta electrica',
         'Zona de catering',
         'Sonido y microfonos',
-      ],
-      reviews: const [
-        MiReservaReview(
-          user: 'Laura M.',
-          score: 5,
-          text: 'Excelente atencion y el salon impecable. Muy recomendado.',
-        ),
-        MiReservaReview(
-          user: 'Carlos P.',
-          score: 4,
-          text: 'Buena ubicacion y servicios completos. Volveria a reservar.',
-        ),
-        MiReservaReview(
-          user: 'Andrea R.',
-          score: 5,
-          text: 'El wifi y el aire acondicionado funcionaron perfecto todo el evento.',
-        ),
       ],
     );
   }

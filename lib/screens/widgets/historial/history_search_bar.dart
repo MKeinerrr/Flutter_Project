@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 
 class HistorySearchBar extends StatelessWidget {
   const HistorySearchBar({
@@ -21,7 +22,7 @@ class HistorySearchBar extends StatelessWidget {
           hintText: 'Buscar por salón o código (ej. RES-001)',
           prefixIcon: const Icon(Icons.search),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: AppColors.bg2,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide.none,

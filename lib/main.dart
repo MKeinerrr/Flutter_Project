@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'theme/app_colors.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,18 +16,29 @@ class MyApp extends StatelessWidget {
       title: 'BookMaster',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Custom color scheme based on the salon branding palette
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1A0A4C),
-          primary: const Color(0xFF1A0A4C),
-          secondary: const Color(0xFF3D3B8E),
-          surface: Colors.white,
+        colorScheme: const ColorScheme(
+          brightness: Brightness.dark,
+          primary: AppColors.accent,
+          onPrimary: AppColors.bg0,
+          secondary: AppColors.accentDim,
+          onSecondary: AppColors.bg0,
+          error: AppColors.danger,
+          onError: AppColors.text1,
+          background: AppColors.bg0,
+          onBackground: AppColors.text1,
+          surface: AppColors.bg2,
+          onSurface: AppColors.text1,
         ),
-        scaffoldBackgroundColor: Colors.grey[100],
+        scaffoldBackgroundColor: AppColors.bg0,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1A0A4C),
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.bg1,
+          foregroundColor: AppColors.text1,
           elevation: 0,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: AppColors.bg1,
+          selectedItemColor: AppColors.accent,
+          unselectedItemColor: AppColors.text3,
         ),
         useMaterial3: true,
       ),

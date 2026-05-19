@@ -13,10 +13,9 @@ class SalonViewModel {
     required this.badges,
     required this.colorA,
     required this.colorB,
-    required this.slug,
+    required this.photos,
     this.level,
     this.photoUrl,
-    this.videoUrl,
     this.description,
     this.policies,
   });
@@ -32,10 +31,9 @@ class SalonViewModel {
   final List<String> badges;
   final Color colorA;
   final Color colorB;
-  final String slug;
+  final List<String> photos;
   final int? level;
   final String? photoUrl;
-  final String? videoUrl;
   final String? description;
   final String? policies;
 
@@ -62,7 +60,7 @@ class SalonViewModel {
   static Map<String, Color> _resolveCategoryColors(String category) {
     switch (category) {
       case 'Corporativo':
-        return const {'colorA': Color(0xFF3B8AA3), 'colorB': Color(0xFF7EC8E3)};
+        return const {'colorA': Color(0xFF3146B8), 'colorB': Color(0xFF5E77FF)};
       case 'Conferencias':
         return const {'colorA': Color(0xFF522B8A), 'colorB': Color(0xFF8A61C7)};
       case 'Reuniones':
@@ -76,10 +74,14 @@ class SalonViewModel {
     final String category = (raw['categoria'] as String?) ?? 'Salon';
     final Map<String, Color> colors = _resolveCategoryColors(category);
     final dynamic badgesRaw = raw['badges'];
+    final dynamic photosRaw = raw['fotos'];
 
     final List<String> badges = badgesRaw is List<dynamic>
         ? badgesRaw.map((badge) => '$badge').toList()
         : const [];
+    final List<String> photos = photosRaw is List<dynamic>
+      ? photosRaw.map((foto) => '$foto').toList()
+      : const [];
 
     return SalonViewModel(
       id: _asInt(raw['id'] ?? raw['id_salon']),
@@ -93,10 +95,9 @@ class SalonViewModel {
       badges: badges,
       colorA: colors['colorA']!,
       colorB: colors['colorB']!,
-      slug: (raw['slug'] as String?) ?? '',
+      photos: photos,
       level: raw['nivel'] == null ? null : _asInt(raw['nivel']),
       photoUrl: raw['foto'] as String?,
-      videoUrl: raw['video'] as String?,
       description: raw['descripcion'] as String?,
       policies: raw['politicas'] as String?,
     );

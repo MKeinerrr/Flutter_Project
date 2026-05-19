@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-const Color _miReservaPrimaryDark = Color(0xFF1A0A4C);
+import '../../../theme/app_colors.dart';
+
+const Color _miReservaPrimaryDark = AppColors.accent;
 
 class MiReservaNoReservationState extends StatelessWidget {
   const MiReservaNoReservationState({super.key});
@@ -13,7 +15,7 @@ class MiReservaNoReservationState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_busy, size: 56, color: Colors.grey),
+            Icon(Icons.event_busy, size: 56, color: AppColors.text3),
             SizedBox(height: 10),
             Text(
               'Aun no tienes una reserva activa',
@@ -43,7 +45,7 @@ class MiReservaGuestState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.lock_outline, size: 56, color: Colors.grey),
+            const Icon(Icons.lock_outline, size: 56, color: AppColors.text3),
             const SizedBox(height: 10),
             const Text(
               'Inicia sesion para ver los detalles de tu reserva',
@@ -57,7 +59,7 @@ class MiReservaGuestState extends StatelessWidget {
               label: const Text('Iniciar sesion'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _miReservaPrimaryDark,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.bg0,
               ),
             ),
           ],
@@ -85,7 +87,7 @@ class MiReservaErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.wifi_off, size: 56, color: Colors.grey),
+            const Icon(Icons.wifi_off, size: 56, color: AppColors.text3),
             const SizedBox(height: 10),
             Text(
               message,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 import '../../models/reservation_history.dart';
 import '../../utils/screen_formatters.dart';
 
@@ -21,15 +22,15 @@ class HistoryReservationCard extends StatelessWidget {
   Color _statusColor(String status) {
     switch (status) {
       case 'Confirmada':
-        return Colors.blue;
+        return AppColors.success;
       case 'Completada':
-        return Colors.green;
+        return AppColors.success;
       case 'Pendiente':
-        return Colors.orange;
+        return AppColors.warning;
       case 'Cancelada':
-        return Colors.red;
+        return AppColors.danger;
       default:
-        return Colors.grey;
+        return AppColors.text3;
     }
   }
 
@@ -55,12 +56,12 @@ class HistoryReservationCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.bg2,
         borderRadius: BorderRadius.circular(12),
         border: Border(left: BorderSide(color: color, width: 4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(12),
+            color: AppColors.accent,
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -76,7 +77,7 @@ class HistoryReservationCard extends StatelessWidget {
             child: Text(
               reservation.initial,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.text1,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -85,7 +86,7 @@ class HistoryReservationCard extends StatelessWidget {
             reservation.salon,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: primaryDark,
+              color: AppColors.text1,
             ),
           ),
           subtitle: Column(
@@ -94,12 +95,12 @@ class HistoryReservationCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 reservation.dateLabel,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: AppColors.text1),
               ),
               const SizedBox(height: 2),
               Text(
                 '${reservation.guests} asistentes · ${reservation.id}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: AppColors.text3),
               ),
             ],
           ),
@@ -140,7 +141,7 @@ class HistoryReservationCard extends StatelessWidget {
                     label: const Text('Repetir'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: accentIndigo,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.bg0,
                     ),
                   ),
                 ),
@@ -162,7 +163,7 @@ class HistoryReservationCard extends StatelessWidget {
             child: Text(
               label,
               style: const TextStyle(
-                color: Colors.grey,
+                color: AppColors.text3,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -170,7 +171,7 @@ class HistoryReservationCard extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: primaryDark),
+              style: const TextStyle(color: AppColors.text1),
             ),
           ),
         ],

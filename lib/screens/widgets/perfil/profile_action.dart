@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 
 class ProfileActionTile extends StatelessWidget {
   const ProfileActionTile({
@@ -23,6 +24,7 @@ class ProfileActionTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       elevation: 2,
+      color: AppColors.bg2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -34,11 +36,14 @@ class ProfileActionTile extends StatelessWidget {
           title,
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: primaryDark,
+            color: AppColors.text1,
           ),
         ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(color: AppColors.text1),
+        ),
+        trailing: const Icon(Icons.chevron_right, color: AppColors.text1),
         onTap: onTap,
       ),
     );

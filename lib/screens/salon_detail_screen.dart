@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 import 'models/salon_view_model.dart';
 import 'utils/screen_formatters.dart';
 
@@ -25,6 +26,8 @@ class SalonDetailScreen extends StatelessWidget {
           _buildSummaryRow(price),
           const SizedBox(height: 14),
           _buildBadges(),
+          const SizedBox(height: 16),
+          _buildGallerySection(),
           const SizedBox(height: 16),
           _buildSection(
             title: 'Descripcion',
@@ -56,8 +59,12 @@ class SalonDetailScreen extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
       ),
-      child: const Center(
-        child: Icon(Icons.photo, size: 48, color: Colors.white70),
+      child: Center(
+        child: Icon(
+          Icons.photo,
+          size: 48,
+          color: AppColors.text1.withAlpha(180),
+        ),
       ),
     );
 
@@ -93,7 +100,7 @@ class SalonDetailScreen extends StatelessWidget {
         height: 200,
         width: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => fallback,
+        errorBuilder: (_, _, _) => fallback,
       ),
     );
   }
@@ -124,7 +131,7 @@ class SalonDetailScreen extends StatelessWidget {
             (badge) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFEDEAFF),
+                color: AppColors.bg3,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -132,12 +139,58 @@ class SalonDetailScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF3D3B8E),
+                  color: AppColors.accent,
                 ),
               ),
             ),
           )
           .toList(),
+    );
+  }
+
+  Widget _buildGallerySection() {
+    final List<String> gallery = salon.photos.isNotEmpty
+        ? salon.photos
+        : (salon.photoUrl != null && salon.photoUrl!.trim().isNotEmpty)
+            ? [salon.photoUrl!.trim()]
+            : const [];
+
+    if (gallery.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Galeria',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 160,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: gallery.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.network(
+                  gallery[index],
+                  width: 240,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => Container(
+                    width: 240,
+                    color: AppColors.bg2,
+                    child: const Center(child: Icon(Icons.photo)),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -163,20 +216,20 @@ class SalonDetailScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
+        color: AppColors.bg3,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFF475569)),
+          Icon(icon, size: 14, color: AppColors.text3),
           const SizedBox(width: 6),
           Text(
             label,
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF334155),
+              color: AppColors.text2,
             ),
           ),
         ],
@@ -195,7 +248,7 @@ class SalonDetailScreen extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           content,
-          style: const TextStyle(color: Color(0xFF475569), height: 1.4),
+          style: const TextStyle(color: AppColors.text2, height: 1.4),
         ),
       ],
     );

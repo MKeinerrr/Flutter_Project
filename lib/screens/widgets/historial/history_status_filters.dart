@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 
 class HistoryStatusFilters extends StatelessWidget {
   const HistoryStatusFilters({
@@ -35,7 +36,7 @@ class HistoryStatusFilters extends StatelessWidget {
               selected: isSelected,
               selectedColor: accentIndigo,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : primaryDark,
+                color: isSelected ? AppColors.text1 : AppColors.text2,
                 fontWeight: FontWeight.w600,
               ),
               onSelected: (_) => onSelect(filter),

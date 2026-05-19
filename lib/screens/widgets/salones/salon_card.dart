@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 import '../../models/salon_view_model.dart';
 import '../../utils/screen_formatters.dart';
 
@@ -31,6 +32,7 @@ class SalonCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 3,
+      color: AppColors.bg2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -44,9 +46,12 @@ class SalonCard extends StatelessWidget {
               children: [
                 _buildHeaderImage(),
                 Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Color(0x7A0F172A), Color(0x002D2D2D)],
+                      colors: [
+                        AppColors.bg4.withAlpha(160),
+                        AppColors.bg0.withAlpha(0),
+                      ],
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                     ),
@@ -64,13 +69,13 @@ class SalonCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(38),
+                              color: AppColors.text1.withAlpha(38),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               salon.category,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.text1,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 11,
                               ),
@@ -82,14 +87,14 @@ class SalonCard extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.bg3,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
                                 isFavorite
                                     ? Icons.favorite
                                     : Icons.favorite_border,
-                                color: isFavorite ? Colors.red : accentIndigo,
+                                color: isFavorite ? AppColors.danger : accentIndigo,
                                 size: 16,
                               ),
                             ),
@@ -101,13 +106,13 @@ class SalonCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.bg3,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               'Desde \$$price',
                               style: TextStyle(
-                                color: accentIndigo,
+                                color: AppColors.accent,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 11,
                               ),
@@ -124,7 +129,7 @@ class SalonCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.bg3,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -132,10 +137,13 @@ class SalonCard extends StatelessWidget {
                                 const Icon(
                                   Icons.star,
                                   size: 14,
-                                  color: Colors.amber,
+                                  color: AppColors.warning,
                                 ),
                                 const SizedBox(width: 4),
-                                Text(salon.rating.toStringAsFixed(1)),
+                                Text(
+                                  salon.rating.toStringAsFixed(1),
+                                  style: const TextStyle(color: AppColors.text1),
+                                ),
                               ],
                             ),
                           ),
@@ -146,7 +154,7 @@ class SalonCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: salon.available ? Colors.green : Colors.red,
+                              color: salon.available ? AppColors.success : AppColors.danger,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -154,7 +162,7 @@ class SalonCard extends StatelessWidget {
                                   ? 'Disponible hoy'
                                   : 'No disponible',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.text1,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 11,
                               ),
@@ -178,7 +186,7 @@ class SalonCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
-                    color: primaryDark,
+                    color: AppColors.text1,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -187,23 +195,23 @@ class SalonCard extends StatelessWidget {
                     const Icon(
                       Icons.location_on_outlined,
                       size: 14,
-                      color: Colors.grey,
+                      color: AppColors.text3,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       salon.zone,
-                      style: const TextStyle(color: Colors.grey),
+                      style: const TextStyle(color: AppColors.text2),
                     ),
                     const SizedBox(width: 12),
                     const Icon(
                       Icons.people_outline,
                       size: 14,
-                      color: Colors.grey,
+                      color: AppColors.text3,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '${salon.capacity} personas',
-                      style: const TextStyle(color: Colors.grey),
+                      style: const TextStyle(color: AppColors.text2),
                     ),
                   ],
                 ),
@@ -219,13 +227,13 @@ class SalonCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEDEAFF),
+                            color: AppColors.bg3,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
                             badge,
                             style: TextStyle(
-                              color: accentIndigo,
+                              color: AppColors.accent,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -243,8 +251,8 @@ class SalonCard extends StatelessWidget {
                         icon: const Icon(Icons.bolt),
                         label: const Text('Reservar ahora'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: accentIndigo,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.accentDim,
+                          foregroundColor: AppColors.bg0,
                         ),
                       ),
                     ),
@@ -276,7 +284,7 @@ class SalonCard extends StatelessWidget {
         ),
       ),
       child: const Center(
-        child: Icon(Icons.photo, size: 30, color: Colors.white70),
+        child: Icon(Icons.photo, size: 30, color: AppColors.text1),
       ),
     );
 
@@ -300,7 +308,7 @@ class SalonCard extends StatelessWidget {
     return Image.network(
       photoUrl,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => fallback,
+      errorBuilder: (_, _, _) => fallback,
     );
   }
 }

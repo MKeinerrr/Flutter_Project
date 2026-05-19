@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../auth/auth_controller.dart';
 import '../config/api_config.dart';
+import '../theme/app_colors.dart';
 import 'auth_screen.dart';
 import 'models/catalog_item.dart';
 import 'models/wallet_method.dart';
@@ -18,8 +19,8 @@ class BilleteraScreen extends StatefulWidget {
 }
 
 class _BilleteraScreenState extends State<BilleteraScreen> {
-  static const Color _primaryDark = Color(0xFF1A0A4C);
-  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static const Color _primaryDark = AppColors.bg1;
+  static const Color _accentIndigo = AppColors.accent;
   static const Duration _requestTimeout = Duration(seconds: 12);
 
   late final WalletApiService _walletApiService;
@@ -252,7 +253,7 @@ class _BilleteraScreenState extends State<BilleteraScreen> {
                       child: Text(
                         'No tienes metodos guardados',
                         style: TextStyle(
-                          color: _primaryDark,
+                          color: AppColors.text1,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

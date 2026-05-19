@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
 import '../config/api_config.dart';
+import '../theme/app_colors.dart';
 import 'auth_screen.dart';
 import 'models/reservation_history.dart';
 import 'salones_screen.dart';
 import 'services/historial_api_service.dart';
+import 'utils/screen_formatters.dart';
 import 'widgets/historial/history_grouped_list.dart';
 import 'widgets/historial/history_search_bar.dart';
 import 'widgets/historial/history_status_filters.dart';
@@ -17,8 +19,8 @@ import 'widgets/main_bottom_nav.dart';
 class HistorialScreen extends StatefulWidget {
   const HistorialScreen({super.key});
 
-  static const Color primaryDark = Color(0xFF1A0A4C);
-  static const Color accentIndigo = Color(0xFF3D3B8E);
+  static const Color primaryDark = AppColors.bg1;
+  static const Color accentIndigo = AppColors.accent;
 
   @override
   State<HistorialScreen> createState() => _HistorialScreenState();
@@ -196,8 +198,8 @@ class _HistorialScreenState extends State<HistorialScreen> {
             onSelect: (value) {
               setState(() => _selectedStatus = value);
             },
-            primaryDark: HistorialScreen.primaryDark,
-            accentIndigo: HistorialScreen.accentIndigo,
+            primaryDark: AppColors.bg1,
+            accentIndigo: AppColors.accent,
           ),
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 8, 16, 6),
@@ -206,7 +208,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: HistorialScreen.primaryDark,
+                color: AppColors.text1,
               ),
             ),
           ),
@@ -221,17 +223,9 @@ class _HistorialScreenState extends State<HistorialScreen> {
                             ? _buildEmptyState()
                             : HistoryGroupedList(
                                 grouped: grouped,
-                                primaryDark: HistorialScreen.primaryDark,
-                                accentIndigo: HistorialScreen.accentIndigo,
-                                onReceiptTap: (reservation) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Comprobante ${reservation.id} en desarrollo',
-                                      ),
-                                    ),
-                                  );
-                                },
+                                primaryDark: AppColors.bg1,
+                                accentIndigo: AppColors.accent,
+                                onReceiptTap: _showReceipt,
                                 onRepeatTap: (_) {
                                   Navigator.pushReplacement(
                                     context,
@@ -245,6 +239,68 @@ class _HistorialScreenState extends State<HistorialScreen> {
         ],
       ),
       bottomNavigationBar: const MainBottomNav(currentIndex: 3),
+    );
+  }
+
+  void _showReceipt(ReservationHistoryItem reservation) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Comprobante de reserva',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 12),
+              _receiptRow('Codigo', reservation.id),
+              _receiptRow('Salon', reservation.salon),
+              _receiptRow('Fecha', reservation.dateLabel),
+              _receiptRow('Estado', reservation.status),
+              _receiptRow('Asistentes', '${reservation.guests}'),
+              _receiptRow(
+                'Monto',
+                '\$${ScreenFormatters.formatCurrency(reservation.amount)}',
+              ),
+              _receiptRow('Pago', reservation.payment),
+              if (reservation.notes.trim().isNotEmpty)
+                _receiptRow('Notas', reservation.notes),
+              const SizedBox(height: 8),
+              const Text(
+                'Documento generado por la app.',
+                style: TextStyle(color: AppColors.text3),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _receiptRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.text3,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
     );
   }
 
@@ -280,15 +336,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () {
-                setState(() {
-                  _selectedStatus = 'Todas';
-                  _searchController.clear();
-                });
-              },
-              child: const Text('Limpiar búsqueda'),
-            ),
           ],
         ),
       ),

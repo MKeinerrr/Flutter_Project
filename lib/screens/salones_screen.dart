@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
 import '../config/api_config.dart';
+import '../theme/app_colors.dart';
 import 'auth_screen.dart';
 import 'salon_detail_screen.dart';
 import 'models/catalog_item.dart';
@@ -27,8 +28,8 @@ class SalonesScreen extends StatefulWidget {
 }
 
 class _SalonesScreenState extends State<SalonesScreen> {
-  static const Color _primaryDark = Color(0xFF1A0A4C);
-  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static const Color _primaryDark = AppColors.bg1;
+  static const Color _accentIndigo = AppColors.accent;
   static const Duration _requestTimeout = Duration(seconds: 12);
 
   static const List<String> _sortOptions = [
@@ -50,6 +51,10 @@ class _SalonesScreenState extends State<SalonesScreen> {
   String _selectedSort = 'Mejor calificacion';
   RangeValues _capacityRange = const RangeValues(20, 200);
   RangeValues _priceRange = const RangeValues(300000, 1300000);
+  double _capacityMin = 20;
+  double _capacityMax = 200;
+  double _priceMin = 300000;
+  double _priceMax = 1300000;
 
   late final CatalogosApiService _catalogosApiService;
   late final SalonesApiService _apiService;
@@ -121,16 +126,34 @@ class _SalonesScreenState extends State<SalonesScreen> {
       RangeValues priceRange = _priceRange;
       bool rangesInitialized = _rangesInitialized;
 
-      if (!_rangesInitialized && loaded.isNotEmpty) {
-        capacityRange = _rangeFromInts(
-          loaded.map((salon) => salon.capacity).toList(),
-          _capacityRange,
-        );
-        priceRange = _rangeFromDoubles(
-          loaded.map((salon) => salon.price).toList(),
-          _priceRange,
-        );
-        rangesInitialized = true;
+      if (loaded.isNotEmpty) {
+        final List<int> capacities =
+            loaded.map((salon) => salon.capacity).toList();
+        final List<double> prices =
+            loaded.map((salon) => salon.price).toList();
+
+        final RangeValues capacityLimits =
+            _rangeFromInts(capacities, _capacityRange);
+        final RangeValues priceLimits =
+            _rangeFromDoubles(prices, _priceRange);
+
+        _capacityMin = capacityLimits.start;
+        _capacityMax = capacityLimits.end;
+        _priceMin = priceLimits.start;
+        _priceMax = priceLimits.end;
+
+        if (!_rangesInitialized) {
+          capacityRange = capacityLimits;
+          priceRange = priceLimits;
+          rangesInitialized = true;
+        } else {
+          capacityRange = _clampRange(
+            _capacityRange,
+            _capacityMin,
+            _capacityMax,
+          );
+          priceRange = _clampRange(_priceRange, _priceMin, _priceMax);
+        }
       }
 
       setState(() {
@@ -263,15 +286,42 @@ class _SalonesScreenState extends State<SalonesScreen> {
     setState(() {
       _selectedType = 'Todos';
       _onlyAvailable = false;
-      _capacityRange = _rangeFromInts(
-        _salons.map((salon) => salon.capacity).toList(),
-        const RangeValues(20, 200),
+      final List<int> capacities =
+          _salons.map((salon) => salon.capacity).toList();
+      final List<double> prices =
+          _salons.map((salon) => salon.price).toList();
+
+      final RangeValues capacityLimits = _rangeFromInts(
+        capacities,
+        RangeValues(_capacityMin, _capacityMax),
       );
-      _priceRange = _rangeFromDoubles(
-        _salons.map((salon) => salon.price).toList(),
-        const RangeValues(300000, 1300000),
+      final RangeValues priceLimits = _rangeFromDoubles(
+        prices,
+        RangeValues(_priceMin, _priceMax),
       );
+
+      _capacityMin = capacityLimits.start;
+      _capacityMax = capacityLimits.end;
+      _priceMin = priceLimits.start;
+      _priceMax = priceLimits.end;
+
+      _capacityRange = capacityLimits;
+      _priceRange = priceLimits;
     });
+  }
+
+  RangeValues _clampRange(RangeValues values, double min, double max) {
+    final double start = values.start.clamp(min, max).toDouble();
+    final double end = values.end.clamp(min, max).toDouble();
+    return RangeValues(start, end < start ? start : end);
+  }
+
+  int _divisionsForStep(double min, double max, double step) {
+    final double span = max - min;
+    if (span <= 0 || step <= 0) {
+      return 1;
+    }
+    return (span / step).round().clamp(1, 1000000).toInt();
   }
 
   RangeValues _rangeFromInts(List<int> values, RangeValues fallback) {
@@ -367,7 +417,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
                 hintText: 'Buscar por nombre, zona o categoria...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppColors.bg2,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
@@ -379,10 +429,10 @@ class _SalonesScreenState extends State<SalonesScreen> {
           ElevatedButton.icon(
             onPressed: _runSearch,
             icon: const Icon(Icons.tune),
-            label: const Text('Buscar'),
+            label: const Text('Filtros'),
             style: ElevatedButton.styleFrom(
               backgroundColor: _accentIndigo,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.bg0,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -431,7 +481,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.bg2,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -451,7 +501,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
                 'Filtros de reserva',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: _primaryDark,
+                  color: AppColors.text1,
                 ),
               ),
               const Spacer(),
@@ -463,7 +513,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
                 },
                 icon: const Icon(
                   Icons.expand_less,
-                  color: Color.fromARGB(255, 26, 26, 61),
+                  color: AppColors.text2,
                   size: 24,
                 ),
               ),
@@ -495,15 +545,15 @@ class _SalonesScreenState extends State<SalonesScreen> {
               const Spacer(),
               Text(
                 '${_capacityRange.start.round()} - ${_capacityRange.end.round()} personas',
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: AppColors.text3),
               ),
             ],
           ),
           RangeSlider(
             values: _capacityRange,
-            min: 20,
-            max: 250,
-            divisions: 23,
+            min: _capacityMin,
+            max: _capacityMax,
+            divisions: _divisionsForStep(_capacityMin, _capacityMax, 20),
             labels: RangeLabels(
               _capacityRange.start.round().toString(),
               _capacityRange.end.round().toString(),
@@ -516,15 +566,15 @@ class _SalonesScreenState extends State<SalonesScreen> {
               const Spacer(),
               Text(
                 '\$${_priceRange.start.round()} - \$${_priceRange.end.round()}',
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: AppColors.text3),
               ),
             ],
           ),
           RangeSlider(
             values: _priceRange,
-            min: 200000,
-            max: 1500000,
-            divisions: 13,
+            min: _priceMin,
+            max: _priceMax,
+            divisions: _divisionsForStep(_priceMin, _priceMax, 1000000),
             labels: RangeLabels(
               _priceRange.start.round().toString(),
               _priceRange.end.round().toString(),
@@ -551,7 +601,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
             '$count resultados',
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              color: _primaryDark,
+              color: AppColors.text1,
             ),
           ),
           const Spacer(),
@@ -588,7 +638,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           const SizedBox(height: 12),
-          const Icon(Icons.wifi_off, size: 52, color: Colors.grey),
+          const Icon(Icons.wifi_off, size: 52, color: AppColors.text3),
           const SizedBox(height: 10),
           Text(
             _errorMessage,
@@ -617,7 +667,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
         padding: const EdgeInsets.all(24),
         children: [
           const SizedBox(height: 12),
-          const Icon(Icons.search_off, size: 52, color: Colors.grey),
+          const Icon(Icons.search_off, size: 52, color: AppColors.text3),
           const SizedBox(height: 10),
           const Text(
             'No encontramos salones',
@@ -669,7 +719,7 @@ class _SalonesScreenState extends State<SalonesScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       height: 170,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.bg2,
         borderRadius: BorderRadius.circular(16),
       ),
     );

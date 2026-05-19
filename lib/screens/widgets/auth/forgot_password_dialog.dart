@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 
 import '../../../auth/auth_controller.dart';
 
@@ -146,8 +147,8 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: (_message ?? '').toLowerCase().contains('exitos')
-                        ? Colors.green
-                        : Colors.red,
+                        ? AppColors.success
+                        : AppColors.danger,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -164,7 +165,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: widget.accentIndigo,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColors.bg0,
           ),
           onPressed: _isLoading ? null : _submit,
           child: _isLoading

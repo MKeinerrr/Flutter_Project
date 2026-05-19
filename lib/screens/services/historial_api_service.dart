@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
 import 'package:http/http.dart' as http;
 import '../models/reservation_history.dart';
 import '../utils/screen_formatters.dart';
@@ -32,7 +33,7 @@ class HistorialApiService {
           .map(_mapReservationFromApi)
           .toList();
 
-      loaded.sort((a, b) => b.sortDate.compareTo(a.sortDate));
+      loaded.sort((a, b) => a.sortDate.compareTo(b.sortDate));
       return loaded;
     }
 
@@ -113,19 +114,21 @@ class HistorialApiService {
   static Color _avatarColor(String status) {
     switch (status) {
       case 'Completada':
-        return const Color(0xFF2E7D32);
+        return AppColors.success;
       case 'Cancelada':
-        return const Color(0xFFC62828);
+        return AppColors.danger;
       case 'Pendiente':
-        return const Color(0xFFF57C00);
+        return AppColors.warning;
       default:
-        return const Color(0xFF3D3B8E);
+        return AppColors.info;
     }
   }
 
   static ReservationHistoryItem _mapReservationFromApi(Map<String, dynamic> raw) {
     final String salon = (raw['salon'] as String?) ?? 'Salon';
     final String codigo = (raw['codigo'] as String?) ?? 'RES-000';
+    final int reservationId = _asInt(raw['id']);
+    final int salonId = _asInt(raw['salon_id']);
     final DateTime fecha = DateTime.tryParse('${raw['fecha']}') ?? DateTime.now();
     final String franja = (raw['franja_horaria'] as String?) ?? 'Sin franja';
     final String estado = _normalizeStatus((raw['estado'] as String?) ?? 'Pendiente');
@@ -142,6 +145,8 @@ class HistorialApiService {
 
     return ReservationHistoryItem(
       id: codigo,
+      reservationId: reservationId,
+      salonId: salonId,
       salon: salon,
       initial: initial,
       color: _avatarColor(estado),

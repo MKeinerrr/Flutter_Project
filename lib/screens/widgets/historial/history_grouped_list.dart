@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 import '../../models/reservation_history.dart';
 import 'history_reservation_card.dart';
 
@@ -38,15 +39,15 @@ class HistoryGroupedList extends StatelessWidget {
                 month,
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  color: primaryDark,
+                  color: AppColors.text1,
                 ),
               ),
             ),
             ...reservations.map(
               (reservation) => HistoryReservationCard(
                 reservation: reservation,
-                primaryDark: primaryDark,
-                accentIndigo: accentIndigo,
+                primaryDark: AppColors.bg1,
+                accentIndigo: AppColors.accent,
                 onReceiptTap: () => onReceiptTap(reservation),
                 onRepeatTap: () => onRepeatTap(reservation),
               ),

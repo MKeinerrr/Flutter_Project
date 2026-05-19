@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class ReservationHistoryItem {
   const ReservationHistoryItem({
     required this.id,
+    required this.reservationId,
+    required this.salonId,
     required this.salon,
     required this.initial,
     required this.color,
@@ -17,6 +19,8 @@ class ReservationHistoryItem {
   });
 
   final String id;
+  final int reservationId;
+  final int salonId;
   final String salon;
   final String initial;
   final Color color;

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
 import '../config/api_config.dart';
+import '../theme/app_colors.dart';
 import 'models/reservation_history.dart';
 import 'models/salon_view_model.dart';
 import 'salones_screen.dart';
@@ -23,8 +24,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const Color _primaryDark = Color(0xFF1A0A4C);
-  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static const Color _primaryDark = AppColors.bg1;
+  static const Color _accentIndigo = AppColors.accent;
   static const Duration _requestTimeout = Duration(seconds: 12);
 
   late final HistorialApiService _historialApiService;
@@ -125,8 +126,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final List<SalonViewModel> salons = await _salonesApiService.fetchSalons();
-      final List<HomeFeaturedSalon> mapped = salons
-          .take(6)
+      final List<SalonViewModel> topRated = [...salons]
+        ..sort((a, b) => b.rating.compareTo(a.rating));
+
+      final List<HomeFeaturedSalon> mapped = topRated
+          .take(3)
           .map(
             (salon) => HomeFeaturedSalon(
               id: salon.id,
@@ -137,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
               rating: salon.rating.toStringAsFixed(1),
               colorA: salon.colorA,
               colorB: salon.colorB,
+              photoUrl: salon.photoUrl,
             ),
           )
           .toList();
@@ -173,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Hola, ${AuthController.instance.session?.username ?? widget.username}',
+          'Bienvenido, ${AuthController.instance.session?.username ?? widget.username}',
         ),
         actions: [
           IconButton(

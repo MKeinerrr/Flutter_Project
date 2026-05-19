@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
+import '../theme/app_colors.dart';
 import 'auth_screen.dart';
 import 'favoritos_screen.dart';
 import 'billetera_screen.dart';
+import 'help_screen.dart';
 import 'perfil_config_screen.dart';
 import 'widgets/main_bottom_nav.dart';
 import 'widgets/perfil/profile_action.dart';
@@ -17,8 +19,8 @@ class PerfilScreen extends StatefulWidget {
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
-  static const Color _primaryDark = Color(0xFF1A0A4C);
-  static const Color _accentIndigo = Color(0xFF3D3B8E);
+  static const Color _primaryDark = AppColors.bg1;
+  static const Color _accentIndigo = AppColors.accent;
 
   Future<void> _openAuth(AuthMode mode) async {
     await Navigator.push<bool>(
@@ -116,7 +118,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
             subtitle: 'Soporte y preguntas frecuentes',
             accentIndigo: _accentIndigo,
             primaryDark: _primaryDark,
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HelpScreen()),
+              );
+            },
           ),
         ],
       ),

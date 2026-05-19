@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_colors.dart';
 import '../../mi_reserva_screen.dart';
 import '../../salones_screen.dart';
 import '../../utils/favorites_store.dart';
@@ -25,6 +26,7 @@ class HomeFeaturedSalon {
     required this.rating,
     required this.colorA,
     required this.colorB,
+    required this.photoUrl,
   });
 
   final int id;
@@ -35,6 +37,7 @@ class HomeFeaturedSalon {
   final String rating;
   final Color colorA;
   final Color colorB;
+  final String? photoUrl;
 }
 
 class HomeHeroSection extends StatelessWidget {
@@ -54,7 +57,7 @@ class HomeHeroSection extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 26),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [primaryDark, accentIndigo, const Color(0xFF4D45AA)],
+          colors: [AppColors.bg1, AppColors.bg2, AppColors.bg4, AppColors.accentDim],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -74,18 +77,18 @@ class HomeHeroSection extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(38),
+                  color: AppColors.text1.withAlpha(38),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Row(
                   children: [
                     Icon(
                       Icons.location_on_outlined,
-                      color: Colors.white,
+                      color: AppColors.text1,
                       size: 16,
                     ),
                     SizedBox(width: 6),
-                    Text('Cartagena', style: TextStyle(color: Colors.white)),
+                    Text('Cartagena', style: TextStyle(color: AppColors.text1)),
                   ],
                 ),
               ),
@@ -95,7 +98,7 @@ class HomeHeroSection extends StatelessWidget {
           const Text(
             'Encuentra el salón perfecto\npara tu próximo evento\nsin salir de casa',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.text1,
               fontSize: 26,
               fontWeight: FontWeight.w800,
               height: 1.1,
@@ -130,7 +133,7 @@ class HomeNextReservationSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.bg2,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
@@ -145,14 +148,14 @@ class HomeNextReservationSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.event_available, color: accentIndigo, size: 20),
+                Icon(Icons.event_available, color: AppColors.accent, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Tu proxima reserva',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: primaryDark,
+                    color: AppColors.text1,
                   ),
                 ),
               ],
@@ -161,7 +164,7 @@ class HomeNextReservationSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF6F5FF),
+                color: AppColors.bg3,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: isLoading
@@ -174,7 +177,7 @@ class HomeNextReservationSection extends StatelessWidget {
                   ? Text(
                       'No tienes reservas activas\n\nCuando hagas una reserva, aqui podras ver fecha, hora y estado.',
                       style: TextStyle(
-                        color: Colors.grey[700],
+                        color: AppColors.text2,
                         fontWeight: FontWeight.w500,
                       ),
                     )
@@ -186,14 +189,14 @@ class HomeNextReservationSection extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: primaryDark,
+                            color: AppColors.text1,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           nextReservation!.dateLabel,
                           style: TextStyle(
-                            color: Colors.grey[700],
+                            color: AppColors.text2,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -201,7 +204,7 @@ class HomeNextReservationSection extends StatelessWidget {
                         Text(
                           'Estado: ${nextReservation!.status}',
                           style: TextStyle(
-                            color: accentIndigo,
+                            color: AppColors.accent,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -231,8 +234,8 @@ class HomeNextReservationSection extends StatelessWidget {
                       : 'Buscar salones disponibles',
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: accentIndigo,
-                  side: BorderSide(color: accentIndigo),
+                  foregroundColor: AppColors.accent,
+                  side: BorderSide(color: AppColors.accent),
                 ),
               ),
             ),
@@ -267,7 +270,7 @@ class HomeFeaturedHeader extends StatelessWidget {
             style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.w800,
-              color: primaryDark,
+              color: AppColors.text1,
             ),
           ),
           const Spacer(),
@@ -349,7 +352,7 @@ class HomeFeaturedEmpty extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.bg2,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -365,7 +368,7 @@ class HomeFeaturedEmpty extends StatelessWidget {
             Text(
               message,
               style: TextStyle(
-                color: primaryDark,
+                color: AppColors.text1,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -375,10 +378,10 @@ class HomeFeaturedEmpty extends StatelessWidget {
               icon: Icon(Icons.refresh, color: accentIndigo),
               label: Text(
                 'Reintentar',
-                style: TextStyle(color: accentIndigo),
+                style: TextStyle(color: AppColors.accent),
               ),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: accentIndigo),
+                side: BorderSide(color: AppColors.accent),
               ),
             ),
           ],
@@ -410,6 +413,7 @@ class _HomeFeaturedCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 14),
       child: Card(
         elevation: 5,
+        color: AppColors.bg2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -425,75 +429,92 @@ class _HomeFeaturedCard extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(36),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              salon.type,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: onToggleFavorite,
-                            child: Icon(
-                              isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: isFavorite ? Colors.red[200] : Colors.white,
-                            ),
-                          ),
-                        ],
+                child: Stack(
+                  children: [
+                    if (salon.photoUrl != null &&
+                        salon.photoUrl!.trim().isNotEmpty)
+                      Positioned.fill(
+                        child: Image.network(
+                          salon.photoUrl!.trim(),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
                       ),
-                      const Spacer(),
-                      Row(
+                    Container(color: Colors.black.withAlpha(35)),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.star,
-                                  color: Colors.amber,
-                                  size: 14,
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  salon.rating,
+                                decoration: BoxDecoration(
+                                  color: AppColors.text1.withAlpha(36),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  salon.type,
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.text1,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: onToggleFavorite,
+                                child: Icon(
+                                  isFavorite
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: isFavorite
+                                      ? AppColors.danger
+                                      : AppColors.text1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bg3,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.star,
+                                      color: AppColors.warning,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      salon.rating,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.text1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -507,7 +528,7 @@ class _HomeFeaturedCard extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 15,
-                      color: primaryDark,
+                      color: AppColors.text1,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -516,13 +537,13 @@ class _HomeFeaturedCard extends StatelessWidget {
                       const Icon(
                         Icons.people_alt_outlined,
                         size: 16,
-                        color: Colors.grey,
+                        color: AppColors.text3,
                       ),
                       const SizedBox(width: 5),
                       Text(
                         '${salon.capacity} personas',
                         style: const TextStyle(
-                          color: Colors.grey,
+                          color: AppColors.text2,
                           fontSize: 12,
                         ),
                       ),
@@ -531,7 +552,7 @@ class _HomeFeaturedCard extends StatelessWidget {
                         'Desde ${salon.price}',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          color: accentIndigo,
+                          color: AppColors.accent,
                           fontSize: 12,
                         ),
                       ),

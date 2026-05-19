@@ -41,6 +41,102 @@ class SalonesApiService {
     );
   }
 
+  Future<SalonViewModel> fetchSalonById({required int salonId, String? token}) async {
+    final Uri url = Uri.parse('$baseUrl/salones/$salonId');
+    final Map<String, String> headers = {'Content-Type': 'application/json'};
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final response = await http.get(url, headers: headers).timeout(requestTimeout);
+    final dynamic parsed = json.decode(response.body);
+    final Map<String, dynamic> payload = parsed is Map<String, dynamic>
+        ? parsed
+        : <String, dynamic>{};
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return SalonViewModel.fromApi(payload);
+    }
+
+    throw Exception(
+      (payload['detail'] as String?) ?? 'No se pudo cargar el salon',
+    );
+  }
+
+  Future<void> submitRating({
+    required String token,
+    required int salonId,
+    required int score,
+    String? comment,
+  }) async {
+    if (token.isEmpty) {
+      throw Exception('Debes iniciar sesion para calificar');
+    }
+
+    final Uri url = Uri.parse('$baseUrl/salones/$salonId/calificaciones');
+    final Map<String, dynamic> payload = {
+      'cantidad': score,
+      'comentario': comment?.trim().isNotEmpty == true ? comment!.trim() : null,
+    };
+
+    final response = await http
+        .post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: json.encode(payload),
+        )
+        .timeout(requestTimeout);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return;
+    }
+
+    final dynamic parsed = json.decode(response.body);
+    final Map<String, dynamic> responsePayload = parsed is Map<String, dynamic>
+        ? parsed
+        : <String, dynamic>{};
+
+    throw Exception(
+      (responsePayload['detail'] as String?) ?? 'No se pudo guardar la calificacion',
+    );
+  }
+
+  Future<void> cancelReservation({
+    required String token,
+    required int reservationId,
+  }) async {
+    if (token.isEmpty) {
+      throw Exception('Debes iniciar sesion para cancelar');
+    }
+
+    final Uri url = Uri.parse('$baseUrl/reservas/$reservationId/cancelar');
+    final response = await http
+        .post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        )
+        .timeout(requestTimeout);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return;
+    }
+
+    final dynamic parsed = json.decode(response.body);
+    final Map<String, dynamic> responsePayload = parsed is Map<String, dynamic>
+        ? parsed
+        : <String, dynamic>{};
+
+    throw Exception(
+      (responsePayload['detail'] as String?) ?? 'No se pudo cancelar la reserva',
+    );
+  }
+
   Future<String> createReservation({
     required String token,
     required int salonId,
