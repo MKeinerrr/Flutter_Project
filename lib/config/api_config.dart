@@ -1,9 +1,7 @@
-import 'package:flutter/foundation.dart';
-
 class ApiConfig {
   ApiConfig._();
 
-  static const String _defaultPort = '8000';
+  static const String _renderBaseUrl = 'https://backend-auth-nioe.onrender.com';
 
   static String get baseUrl {
     const String fromDefine = String.fromEnvironment('API_BASE_URL');
@@ -11,16 +9,7 @@ class ApiConfig {
       return fromDefine;
     }
 
-    if (kIsWeb) {
-      return 'http://localhost:$_defaultPort';
-    }
-
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        return 'http://10.0.2.2:$_defaultPort';
-      default:
-        return 'http://localhost:$_defaultPort';
-    }
+    return _renderBaseUrl;
   }
 
   static String get authBaseUrl => '$baseUrl/auth';

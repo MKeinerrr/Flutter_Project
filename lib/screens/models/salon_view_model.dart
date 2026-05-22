@@ -57,6 +57,20 @@ class SalonViewModel {
     return double.tryParse('$value') ?? fallback;
   }
 
+  static List<String> _uniqueStrings(Iterable<dynamic> values) {
+    final List<String> result = [];
+    final Set<String> seen = <String>{};
+    for (final dynamic value in values) {
+      final String text = '$value'.trim();
+      if (text.isEmpty || seen.contains(text)) {
+        continue;
+      }
+      seen.add(text);
+      result.add(text);
+    }
+    return result;
+  }
+
   static Map<String, Color> _resolveCategoryColors(String category) {
     switch (category) {
       case 'Corporativo':
@@ -80,7 +94,7 @@ class SalonViewModel {
         ? badgesRaw.map((badge) => '$badge').toList()
         : const [];
     final List<String> photos = photosRaw is List<dynamic>
-      ? photosRaw.map((foto) => '$foto').toList()
+      ? _uniqueStrings(photosRaw)
       : const [];
 
     return SalonViewModel(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 import 'theme/app_colors.dart';
 
 void main() {
@@ -24,8 +24,6 @@ class MyApp extends StatelessWidget {
           onSecondary: AppColors.bg0,
           error: AppColors.danger,
           onError: AppColors.text1,
-          background: AppColors.bg0,
-          onBackground: AppColors.text1,
           surface: AppColors.bg2,
           onSurface: AppColors.text1,
         ),
@@ -42,7 +40,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

@@ -113,32 +113,18 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
       if (!mounted) {
         return;
       }
-      final String message = error
-          .toString()
-          .replaceFirst('Exception: ', '')
-          .trim();
-      final bool isDuplicateReservation = message
-          .toLowerCase()
-          .contains('ya existe una reserva');
-      if (isDuplicateReservation) {
-        await showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Reserva no disponible'),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Entendido'),
-              ),
-            ],
-          ),
-        );
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      final String message = _extractErrorMessage(error);
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Reserva no disponible'),
           content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Entendido'),
+            ),
+          ],
         ),
       );
     } finally {
@@ -148,131 +134,148 @@ class _ReservationBottomSheetState extends State<ReservationBottomSheet> {
     }
   }
 
+  String _extractErrorMessage(Object error) {
+    final String raw = error.toString().replaceFirst('Exception: ', '').trim();
+    if (raw.isNotEmpty) {
+      return raw;
+    }
+    return 'No se pudo confirmar la reserva';
+  }
+
   @override
   Widget build(BuildContext context) {
     final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final double maxHeight = MediaQuery.of(context).size.height * 0.88;
 
     return SafeArea(
-      child: Padding(
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
         padding: EdgeInsets.fromLTRB(16, 8, 16, bottomInset + 16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Reserva en ${widget.salonName}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: _pickDate,
-                icon: const Icon(Icons.calendar_today, size: 16),
-                label: Text(
-                  _selectedDate == null
-                      ? 'Seleccionar fecha'
-                      : _formatDate(_selectedDate!),
-                ),
-              ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<int>(
-                initialValue: _selectedFranjaId,
-                decoration: const InputDecoration(
-                  labelText: 'Franja horaria',
-                  border: OutlineInputBorder(),
-                ),
-                hint: const Text('Sin franjas disponibles'),
-                items: widget.franjas
-                    .map(
-                      (franja) => DropdownMenuItem(
-                        value: franja.id,
-                        child: Text(franja.label),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) => setState(() => _selectedFranjaId = value),
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _attendeesController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Asistentes (max ${widget.salonCapacity})',
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  final int? attendees = int.tryParse((value ?? '').trim());
-                  if (attendees == null || attendees <= 0) {
-                    return 'Ingresa un número válido de asistentes';
-                  }
-                  if (attendees > widget.salonCapacity) {
-                    return 'No puede superar la capacidad del salón';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Metodo de pago',
-                style: TextStyle(
-                  color: AppColors.text2,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: widget.metodos
-                    .map(
-                      (metodo) => ChoiceChip(
-                        label: Text(metodo.name),
-                        selected: _selectedMetodoId == metodo.id,
-                        onSelected: (selected) {
-                          if (selected) {
-                            setState(() => _selectedMetodoId = metodo.id);
-                          }
-                        },
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _notesController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Notas (opcional)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _submitting ? null : _submit,
-                  icon: _submitting
-                      ? const SizedBox(
-                          height: 16,
-                          width: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Reserva en ${widget.salonName}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _pickDate,
+                    icon: const Icon(Icons.calendar_today, size: 16),
+                    label: Text(
+                      _selectedDate == null
+                          ? 'Seleccionar fecha'
+                          : _formatDate(_selectedDate!),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<int>(
+                    initialValue: _selectedFranjaId,
+                    decoration: const InputDecoration(
+                      labelText: 'Franja horaria',
+                      border: OutlineInputBorder(),
+                    ),
+                    hint: const Text('Sin franjas disponibles'),
+                    items: widget.franjas
+                        .map(
+                          (franja) => DropdownMenuItem(
+                            value: franja.id,
+                            child: Text(franja.label),
+                          ),
                         )
-                      : const Icon(Icons.check_circle_outline),
-                  label: Text(
-                    _submitting ? 'Confirmando...' : 'Confirmar reserva',
+                        .toList(),
+                    onChanged: (value) => setState(() => _selectedFranjaId = value),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _accentIndigo,
-                    foregroundColor: AppColors.bg0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _attendeesController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Asistentes (max ${widget.salonCapacity})',
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      final int? attendees = int.tryParse((value ?? '').trim());
+                      if (attendees == null || attendees <= 0) {
+                        return 'Ingresa un número válido de asistentes';
+                      }
+                      if (attendees > widget.salonCapacity) {
+                        return 'No puede superar la capacidad del salón';
+                      }
+                      return null;
+                    },
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Metodo de pago',
+                    style: TextStyle(
+                      color: AppColors.text2,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: widget.metodos
+                        .map(
+                          (metodo) => ChoiceChip(
+                            label: Text(metodo.name),
+                            selected: _selectedMetodoId == metodo.id,
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() => _selectedMetodoId = metodo.id);
+                              }
+                            },
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _notesController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Notas (opcional)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _submitting ? null : _submit,
+                      icon: _submitting
+                          ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.check_circle_outline),
+                      label: Text(
+                        _submitting ? 'Confirmando...' : 'Confirmar reserva',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accentIndigo,
+                        foregroundColor: AppColors.bg0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
